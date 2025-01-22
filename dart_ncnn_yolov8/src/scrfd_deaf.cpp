@@ -391,32 +391,3 @@ SCRFD_DEAF::detect(const cv::Mat &rgb, std::vector <FaceObject> &faceobjects, fl
 
     return 0;
 }
-
-int SCRFD_DEAF::draw(cv::Mat &rgb, const std::vector <FaceObject> &faceobjects) {
-    for (size_t i = 0; i < faceobjects.size(); i++) {
-        const FaceObject &obj = faceobjects[i];
-//        cv::rectangle(rgb, obj.rect, cv::Scalar(0, 255, 0));
-        char text[256];
-//        sprintf(text, "%.1f%%", obj.prob * 100);
-
-        int baseLine = 0;
-//        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-
-//        int x = obj.rect.x;
-//        int y = obj.rect.y - label_size.height - baseLine;
-//        if (y < 0)
-//            y = 0;
-//        if (x + label_size.width > rgb.cols)
-//            x = rgb.cols - label_size.width;
-
-//        cv::rectangle(rgb, cv::Rect(cv::Point(x, y),
-//                                    cv::Size(label_size.width, label_size.height + baseLine)),
-//                      cv::Scalar(255, 255, 255), -1);
-//
-//        cv::putText(rgb, text, cv::Point(x, y + label_size.height), cv::FONT_HERSHEY_SIMPLEX, 0.5,
-//                    cv::Scalar(0, 0, 0), 1);
-    }
-
-    return 0;
-}
-

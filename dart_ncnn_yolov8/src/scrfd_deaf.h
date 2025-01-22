@@ -16,8 +16,6 @@ public:
 
     int detect(const cv::Mat& rgb, std::vector<FaceObject>& faceobjects, float prob_threshold = 0.5f, float nms_threshold = 0.45f);
 
-    int draw(cv::Mat& rgb, const std::vector<FaceObject>& faceobjects);
-
 private:
     ncnn::Net scrfd_deaf;
     bool has_kps;
