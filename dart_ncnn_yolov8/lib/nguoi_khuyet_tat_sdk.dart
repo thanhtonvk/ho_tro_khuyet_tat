@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'dart_ncnn_yolov8_bindings_generated.dart';
+import 'nguoi_khuyet_tat_sdk_bindings_generated.dart';
 import 'models/detect_result.dart';
 import 'models/kanna_rotate/kanna_rotate_device_orientation_type.dart';
 import 'models/kanna_rotate/kanna_rotate_result.dart';
@@ -15,26 +16,16 @@ import 'models/kanna_rotate/kanna_rotate_type.dart';
 import 'models/pixel_channel.dart';
 import 'models/pixel_format.dart';
 import 'models/yolo_result.dart';
+import 'models/face_result.dart';
 
-const yoloProbThresholdDefault = 0.6;
+const String _libName = 'nguoi_khuyet_tat_sdk';
 
-const yoloNmsThresholdDefault = 0.5;
-
-const yoloTargetSizeDefault = 320;
-
-const yoloUseGPUDefault = true;
-
-const yoloNumClassDefault = 80;
-
-const String _libName = 'dart_ncnn_yolov8';
-
-class DartNcnnYolo {
-
-  DartNcnnYolo() {
-    _bindings = DartNcnnYolov8Bindings(_dylib);
+class NguoiKhuyetTatSdk {
+  NguoiKhuyetTatSdk() {
+    _bindings = NguoiKhuyetTatSDKBindings(_dylib);
   }
 
-  /// The dynamic library in which the symbols for [DartNcnnYolov8Bindings] can be found.
+  /// The dynamic library in which the symbols for [NguoiKhuyetTatSdkBindings] can be found.
   final DynamicLibrary _dylib = () {
     if (Platform.isMacOS || Platform.isIOS) {
       return DynamicLibrary.open('$_libName.framework/$_libName');
@@ -49,79 +40,7 @@ class DartNcnnYolo {
   }();
 
   /// The bindings to the native functions in [_dylib].
-  late DartNcnnYolov8Bindings _bindings;
-
-  /// Threshold of bounding box prob.
-  double _probThreshold = yoloProbThresholdDefault;
-  double get probThreshold => _probThreshold;
-
-  /// NMS threshold.
-  double _nmsThreshold = yoloNmsThresholdDefault;
-  double get nmsThreshold => _nmsThreshold;
-
-  /// Target image size after resize.
-  int _targetSize = yoloTargetSizeDefault;
-  int get targetSize => _targetSize;
-
-  int _useGPU = yoloUseGPUDefault ? 1 : 0;
-  int get intUseGPU => _useGPU;
-
-  int _numClass = yoloNumClassDefault;
-  int get numClass => _numClass;
-
-  /// Initialize YOLO
-  /// Run it for the first time
-  ///
-  /// - [modelPath] - path to model file. like "assets/yolo.bin"
-  /// - [paramPath] - path to parameter file. like "assets/yolo.param"
-  /// - [autoDispose] - If true, multiple calls to initYolo will automatically dispose of recently loaded model.
-  /// - [probThreshold] Threshold of bounding box prob.
-  /// - [nmsThresholzip d] NMS threshold.
-  /// - [targetSize] Target image size after resize, might use 416 for small model.
-  Future<void> yoloLoad({
-    required String modelPath,
-    required String paramPath,
-    bool autoDispose = true,
-    double probThreshold = yoloProbThresholdDefault,
-    double nmsThreshold = yoloNmsThresholdDefault,
-    int targetSize = yoloTargetSizeDefault,
-    int numClass = yoloNumClassDefault,
-    bool useGPU = yoloUseGPUDefault,
-  }) async {
-    assert(probThreshold > 0);
-    assert(nmsThreshold > 0);
-    assert(targetSize > 0);
-
-    if (autoDispose) {
-      yoloUnload();
-    }
-
-    _probThreshold = probThreshold;
-    _nmsThreshold = nmsThreshold;
-    _targetSize = targetSize;
-    _numClass = numClass;
-    _useGPU = useGPU ? 1 : 0;
-
-    final tempModelPath = (await _copy(modelPath)).toNativeUtf8();
-    final tempParamPath = (await _copy(paramPath)).toNativeUtf8();
-
-    _bindings.yoloLoad(
-      tempModelPath as Pointer<Char>,
-      tempParamPath as Pointer<Char>,
-      targetSize,
-      numClass,
-      intUseGPU,
-    );
-    
-    calloc
-      ..free(tempModelPath)
-      ..free(tempParamPath);
-  }
-
-  /// Dispose of the recently loaded YOLO model.
-  void yoloUnload() {
-    _bindings.yoloUnload();
-  }
+  late NguoiKhuyetTatSDKBindings _bindings;
 
   Future<String> _copy(String assetsPath) async {
     final documentDir = await getApplicationDocumentsDirectory();
@@ -137,209 +56,125 @@ class DartNcnnYolo {
     return file.path;
   }
 
-  /// Detect with YOLO
-  /// Run it after yoloLoad
-  ///
-  /// When detecting from an image byte array, specify [y], [u] and [v].
-  /// [y] and [u] and [v] are the YUV420 data of the image.
-  /// [height] is the height of the image.
-  /// The width of the image is calculated from [y] length.
-  ///
-  /// [deviceOrientationType] is the device orientation.
-  /// It can be obtained from CameraController of the camera package.
-  /// https://github.com/flutter/plugins/blob/main/packages/camera/camera/lib/src/camera_controller.dart#L134
-  ///
-  /// [sensorOrientation] is the orientation of the camera sensor.
-  /// It can be obtained from CameraController of the camera package.
-  /// https://github.com/flutter/plugins/blob/main/packages/camera/camera_platform_interface/lib/src/types/camera_description.dart#L42
-  ///
-  /// [onDecodeImage] and [onYuv420sp2rgbImage] are callback functions for decoding images.
-  /// The process of converting to a [ui.Image] object is heavy and affects performance.
-  /// If [ui.Image] is not needed, it is recommended to set null.
-  ///
-  DetectResult detectYUV420({
-    required Uint8List y,
-    required Uint8List u,
-    required Uint8List v,
-    required int height,
-    @Deprecated("width is automatically calculated from the length of the y.")
-        int width = 0,
-    required KannaRotateDeviceOrientationType deviceOrientationType,
-    required int sensorOrientation,
-    void Function(ui.Image image)? onDecodeImage,
-    void Function(ui.Image image)? onYuv420sp2rgbImage,
-  }) {
-    final yuv420sp = yuv420sp2Uint8List(
-      y: y,
-      u: u,
-      v: v,
-    );
-
-    final width = y.length ~/ height;
-
-    final pixels = yuv420sp2rgb(
-      yuv420sp: yuv420sp,
-      width: width,
-      height: height,
-    );
-    if (onYuv420sp2rgbImage != null) {
-      final rgba = rgb2rgba(
-        rgb: pixels,
-        width: width,
-        height: height,
-      );
-
-      ui.decodeImageFromPixels(
-        rgba,
-        width,
-        height,
-        ui.PixelFormat.rgba8888,
-        onYuv420sp2rgbImage,
-      );
+  Future<void> load(
+      {required bool isBlind,
+      required bool isDeaf,
+      bool autoDispose = true}) async {
+    if (autoDispose) {
+      unLoad();
     }
-
-    final rotated = kannaRotate(
-      pixels: pixels,
-      width: width,
-      height: height,
-      deviceOrientationType: deviceOrientationType,
-      sensorOrientation: sensorOrientation,
-    );
-
-    if (onDecodeImage != null) {
-      final rgba = rgb2rgba(
-        rgb: rotated.pixels ?? Uint8List(0),
-        width: rotated.width,
-        height: rotated.height,
-      );
-
-      ui.decodeImageFromPixels(
-        rgba,
-        rotated.width,
-        rotated.height,
-        ui.PixelFormat.rgba8888,
-        onDecodeImage,
-      );
+    if (isBlind && !isDeaf) {
+      _bindings.load(0, 1);
+    } else if (!isBlind && isDeaf) {
+      _bindings.load(1, 0);
+    } else if (isBlind && isDeaf) {
+      _bindings.load(1, 1);
     }
-
-    return DetectResult(
-      result: detectPixels(
-        pixels: rotated.pixels ?? Uint8List(0),
-        width: rotated.width,
-        height: rotated.height,
-      ),
-      image: rotated,
-    );
   }
 
-  /// Detect with YOLO
-  /// Run it after yoloLoad
-  ///
-  /// When detecting from an image byte array, specify [pixels].
-  /// [height] is the height of the image.
-  /// The width of the image is calculated from [pixels] length.
-  ///
-  /// [deviceOrientationType] is the device orientation.
-  /// It can be obtained from CameraController of the camera package.
-  /// https://github.com/flutter/plugins/blob/main/packages/camera/camera/lib/src/camera_controller.dart#L134
-  ///
-  /// [sensorOrientation] is the orientation of the camera sensor.
-  /// It can be obtained from CameraController of the camera package.
-  /// https://github.com/flutter/plugins/blob/main/packages/camera/camera_platform_interface/lib/src/types/camera_description.dart#L42
-  ///
-  /// [onDecodeImage] is a callback function to decode the image.
-  /// The process of converting to a [ui.Image] object is heavy and affects performance.
-  /// If [ui.Image] is not needed, it is recommended to set null.
-  ///
-  DetectResult detectBGRA8888({
-    required Uint8List pixels,
-    required int height,
-    @Deprecated("width is automatically calculated from the length of the pixels.")
-        int width = 0,
-    required KannaRotateDeviceOrientationType deviceOrientationType,
-    required int sensorOrientation,
-    void Function(ui.Image image)? onDecodeImage,
-  }) {
-    final width = pixels.length ~/ height ~/ 4;
-
-    final rotated = kannaRotate(
-      pixels: pixels,
-      pixelChannel: PixelChannel.c4,
-      width: width,
-      height: height,
-      deviceOrientationType: deviceOrientationType,
-      sensorOrientation: sensorOrientation,
-    );
-
-    if (onDecodeImage != null) {
-      ui.decodeImageFromPixels(
-        pixels,
-        width,
-        height,
-        ui.PixelFormat.bgra8888,
-        onDecodeImage,
-      );
-    }
-
-    return DetectResult(
-      result: detectPixels(
-        pixels: rotated.pixels ?? Uint8List(0),
-        pixelFormat: PixelFormat.bgra,
-        width: rotated.width,
-        height: rotated.height,
-      ),
-      image: rotated,
-    );
+  void unLoad() {
+    _bindings.unLoad();
   }
 
-  /// Detect with YOLO
-  /// Run it after yoloLoad
-  ///
-  /// Reads an image from pixel data and executes Detect.
-  ///
-  /// [pixels] is pixel data of the image. [pixelFormat] is the pixel format.
-  /// [width] and [height] are the width and height of the image.
-  ///
-  /// Returns a list of [YoloResult]
-  ///
-  List<YoloResult> detectPixels({
-    required Uint8List pixels,
-    PixelFormat pixelFormat = PixelFormat.rgb,
-    required int width,
-    required int height,
-  }) {
+  List<YoloResult> predictDeaf(
+      {required Uint8List pixels, required int width, required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
-
-    final results = YoloResult.create(
-      _bindings.detectWithPixels(
-        pixelsNative,
-        pixelFormat.type,
-        width,
-        height,
-        probThreshold,
-        nmsThreshold,
-        targetSize,
-      ).cast<Utf8>().toDartString(),
-    );
+    final results = YoloResult.create(_bindings
+        .predictDeaf(pixelsNative, width, height)
+        .cast<Utf8>()
+        .toDartString());
     calloc.free(pixelsNative);
     return results;
   }
 
-  /// Detect with YOLO
-  /// Run it after yoloLoad
-  ///
-  /// Read the image from the file path and execute Detect.
-  ///
-  /// The [imagePath] should be the path to the image, such as "assets/image.jpg".
-  /// Returns the results of a YOLO run as a List of [YoloResult].
-  ///
-  List<YoloResult> detectImageFile(
-    String imagePath,
-  ) {
+  List<double> predictEmotion(
+      {required Uint8List pixels, required int width, required height}) {
+    final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
+
+    for (var i = 0; i < pixels.length; i++) {
+      pixelsNative[i] = pixels[i];
+    }
+    final results = _bindings
+        .predictEmotion(pixelsNative, width, height)
+        .cast<Utf8>()
+        .toDartString();
+    calloc.free(pixelsNative);
+    var listVector = results.split(',');
+    if (listVector.isNotEmpty) {
+      listVector.removeLast();
+    }
+    return listVector.map((e) => double.parse(e)).toList();
+  }
+
+  List<double> predictLightTraffic(
+      {required Uint8List pixels, required int width, required height}) {
+    final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
+
+    for (var i = 0; i < pixels.length; i++) {
+      pixelsNative[i] = pixels[i];
+    }
+    final results = _bindings
+        .predictLightTraffic(pixelsNative, width, height)
+        .cast<Utf8>()
+        .toDartString();
+    calloc.free(pixelsNative);
+    var listVector = results.split(',');
+    if (listVector.isNotEmpty) {
+      listVector.removeLast();
+    }
+    return listVector.map((e) => double.parse(e)).toList();
+  }
+
+  List<YoloResult> detectObject(
+      {required Uint8List pixels, required int width, required int height}) {
+    final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
+
+    for (var i = 0; i < pixels.length; i++) {
+      pixelsNative[i] = pixels[i];
+    }
+    final results = YoloResult.create(_bindings
+        .detectObject(pixelsNative, width, height)
+        .cast<Utf8>()
+        .toDartString());
+    calloc.free(pixelsNative);
+    return results;
+  }
+
+  List<YoloResult> detectMoney(
+      {required Uint8List pixels, required int width, required int height}) {
+    final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
+
+    for (var i = 0; i < pixels.length; i++) {
+      pixelsNative[i] = pixels[i];
+    }
+    final results = YoloResult.create(_bindings
+        .detectMoney(pixelsNative, width, height)
+        .cast<Utf8>()
+        .toDartString());
+    calloc.free(pixelsNative);
+    return results;
+  }
+
+  List<FaceResult> detectFace(
+      {required Uint8List pixels, required int width, required int height}) {
+    final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
+
+    for (var i = 0; i < pixels.length; i++) {
+      pixelsNative[i] = pixels[i];
+    }
+    final results = FaceResult.create(_bindings
+        .detectFaceObjectWithPixels(pixelsNative, width, height)
+        .cast<Utf8>()
+        .toDartString());
+    calloc.free(pixelsNative);
+    return results;
+  }
+
+  List<double> getEmbeddingFromPath(String imagePath) {
     assert(imagePath.isNotEmpty, 'imagePath is empty');
 
     if (imagePath.isEmpty) {
@@ -348,16 +183,37 @@ class DartNcnnYolo {
 
     final imagePathNative = imagePath.toNativeUtf8();
 
-    final results = YoloResult.create(
-      _bindings.detectWithImagePath(
-        imagePathNative as Pointer<Char>,
-        probThreshold,
-        nmsThreshold,
-        targetSize,
-      ).cast<Utf8>().toDartString(),
-    );
+    final results = _bindings
+        .getEmbeddingFromPath(
+          imagePathNative as Pointer<Char>,
+        )
+        .cast<Utf8>()
+        .toDartString();
     calloc.free(imagePathNative);
-    return results;
+    var listVector = results.split(',');
+    if (listVector.isNotEmpty) {
+      listVector.removeLast();
+    }
+    return listVector.map((e) => double.parse(e)).toList();
+  }
+
+  List<double> getEmbeddingFromPixels(
+      {required Uint8List pixels, required int width, required height}) {
+    final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
+
+    for (var i = 0; i < pixels.length; i++) {
+      pixelsNative[i] = pixels[i];
+    }
+    final results = _bindings
+        .getEmbeddingWithPixels(pixelsNative, width, height)
+        .cast<Utf8>()
+        .toDartString();
+    calloc.free(pixelsNative);
+    var listVector = results.split(',');
+    if (listVector.isNotEmpty) {
+      listVector.removeLast();
+    }
+    return listVector.map((e) => double.parse(e)).toList();
   }
 
   /// Rotate the pixel to match the orientation of the device.

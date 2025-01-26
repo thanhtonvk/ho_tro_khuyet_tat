@@ -3,7 +3,7 @@
 # the plugin to fail to compile for some customers of the plugin.
 cmake_minimum_required(VERSION 3.10)
 
-project(dart_ncnn_yolov8_library VERSION 0.0.1 LANGUAGES CXX)
+project(nguoi_khuyet_tat_sdk_library VERSION 0.0.1 LANGUAGES CXX)
 
 get_filename_component(PROJECT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 if (CMAKE_SYSTEM_NAME STREQUAL "Android")
@@ -22,18 +22,18 @@ include_directories(
         ${OpenCV_INCLUDE_DIRS}
 )
 
-add_library(dart_ncnn_yolov8 SHARED
-        "dart_ncnn_yolov8.cpp" , "deaf_detection.cpp" , "emotion_recognition.cpp" ,"face_emb.cpp", "light_traffic.cpp" , "money_detection.cpp" , "object_detection.cpp" ,"scrfd_deaf.cpp", "scrfd.cpp"
+add_library(nguoi_khuyet_tat_sdk SHARED
+        "nguoi_khuyet_tat_sdk.cpp" , "deaf_detection.cpp" , "emotion_recognition.cpp" ,"face_emb.cpp", "light_traffic.cpp" , "money_detection.cpp" , "object_detection.cpp" ,"scrfd_deaf.cpp", "scrfd.cpp"
 )
 
-set_target_properties(dart_ncnn_yolov8 PROPERTIES
-        PUBLIC_HEADER dart_ncnn_yolov8.h
-        OUTPUT_NAME "dart_ncnn_yolov8"
+set_target_properties(nguoi_khuyet_tat_sdk PROPERTIES
+        PUBLIC_HEADER nguoi_khuyet_tat_sdk.h
+        OUTPUT_NAME "nguoi_khuyet_tat_sdk"
 )
 
-target_link_libraries(dart_ncnn_yolov8
+target_link_libraries(nguoi_khuyet_tat_sdk
         ncnn
         ${OpenCV_LIBS}
 )
 
-target_compile_definitions(dart_ncnn_yolov8 PUBLIC DART_SHARED_LIB)
+target_compile_definitions(nguoi_khuyet_tat_sdk PUBLIC DART_SHARED_LIB)

@@ -5,3 +5,5 @@ export 'kanna_rotate/kanna_rotate_type.dart';
 export 'pixel_channel.dart';
 export 'pixel_format.dart';
 export 'yolo_result.dart';
+export 'face_result.dart';
+
