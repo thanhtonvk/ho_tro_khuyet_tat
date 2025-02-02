@@ -1,3 +1,3 @@
 export 'models/models.dart';
-export 'dart_ncnn_yolov8.dart';
 export 'yolo_result_painter.dart';
+export 'nguoi_khuyet_tat_sdk.dart';

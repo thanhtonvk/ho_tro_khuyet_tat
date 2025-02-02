@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:dart_ncnn_yolov8/models/face_detect_result.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -76,6 +77,81 @@ class NguoiKhuyetTatSdk {
     _bindings.unLoad();
   }
 
+  DetectResult detectDeafYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return DetectResult(
+      result: predictDeaf(
+        pixels: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      ),
+      image: rotated,
+    );
+  }
+
   List<YoloResult> predictDeaf(
       {required Uint8List pixels, required int width, required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
@@ -110,6 +186,78 @@ class NguoiKhuyetTatSdk {
     return listVector.map((e) => double.parse(e)).toList();
   }
 
+  List<double> predictEmotionYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return predictEmotion(
+      pixels: rotated.pixels ?? Uint8List(0),
+      width: rotated.width,
+      height: rotated.height,
+    );
+  }
+
   List<double> predictLightTraffic(
       {required Uint8List pixels, required int width, required height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
@@ -129,6 +277,78 @@ class NguoiKhuyetTatSdk {
     return listVector.map((e) => double.parse(e)).toList();
   }
 
+  List<double> predictLightTrafficYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return predictLightTraffic(
+      pixels: rotated.pixels ?? Uint8List(0),
+      width: rotated.width,
+      height: rotated.height,
+    );
+  }
+
   List<YoloResult> detectObject(
       {required Uint8List pixels, required int width, required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
@@ -142,6 +362,81 @@ class NguoiKhuyetTatSdk {
         .toDartString());
     calloc.free(pixelsNative);
     return results;
+  }
+
+  DetectResult detectObjectYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return DetectResult(
+      result: detectObject(
+        pixels: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      ),
+      image: rotated,
+    );
   }
 
   List<YoloResult> detectMoney(
@@ -159,6 +454,81 @@ class NguoiKhuyetTatSdk {
     return results;
   }
 
+  DetectResult detectMoneyYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return DetectResult(
+      result: detectMoney(
+        pixels: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      ),
+      image: rotated,
+    );
+  }
+
   List<FaceResult> detectFace(
       {required Uint8List pixels, required int width, required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
@@ -172,6 +542,81 @@ class NguoiKhuyetTatSdk {
         .toDartString());
     calloc.free(pixelsNative);
     return results;
+  }
+
+  FaceDetectResult detectFaceYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return FaceDetectResult(
+      result: detectFace(
+        pixels: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      ),
+      image: rotated,
+    );
   }
 
   List<double> getEmbeddingFromPath(String imagePath) {
@@ -216,16 +661,78 @@ class NguoiKhuyetTatSdk {
     return listVector.map((e) => double.parse(e)).toList();
   }
 
-  /// Rotate the pixel to match the orientation of the device.
-  ///
-  /// [pixels] is Image pixel data.
-  /// [pixelChannel] is the number of channels of the image. For example, [PixelChannel.c3] for RGB or [PixelChannel.c4] for RGBA.
-  /// [width] and [height] specify the width and height of the Image.
-  /// [deviceOrientationType] is the orientation of the device.
-  /// [sensorOrientation] is the orientation of the sensor.
-  ///
-  /// Returns [KannaRotateResult] with the rotated pixels data.
-  ///
+  List<double> getEmbeddingYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return getEmbeddingFromPixels(
+      pixels: rotated.pixels ?? Uint8List(0),
+      width: rotated.width,
+      height: rotated.height,
+    );
+  }
+
   KannaRotateResult kannaRotate({
     required Uint8List pixels,
     PixelChannel pixelChannel = PixelChannel.c3,

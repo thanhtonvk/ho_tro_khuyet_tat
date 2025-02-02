@@ -36,11 +36,11 @@ class _HomePageState extends State<HomePage> {
         destinations: const <Widget>[
           NavigationDestination(
             icon: Icon(Icons.camera_alt),
-            label: '实时检测',
+            label: 'Phát hiện thời gian thực',
           ),
           NavigationDestination(
             icon: Icon(Icons.play_arrow),
-            label: '拍照检测',
+            label: 'Kiểm tra ảnh',
           ),
         ],
       )

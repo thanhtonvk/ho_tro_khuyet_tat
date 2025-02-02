@@ -21,16 +21,16 @@ class CameraPage extends HookConsumerWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('离开'),
+            title: const Text('Thoát'),
             content: const Text(
-              '要离开吗？',
+              'Bạn có muốn rời đi không？',
             ),
             actions: <Widget>[
               TextButton(
                 style: TextButton.styleFrom(
                   textStyle: Theme.of(context).textTheme.labelLarge,
                 ),
-                child: const Text('不'),
+                child: const Text('KHÔNG'),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -39,7 +39,7 @@ class CameraPage extends HookConsumerWidget {
                 style: TextButton.styleFrom(
                   textStyle: Theme.of(context).textTheme.labelLarge,
                 ),
-                child: const Text('离开'),
+                child: const Text('CÓ'),
                 onPressed: () {
                   ref.read(myCameraController).stopImageStream();
                   Navigator.pop(context);
