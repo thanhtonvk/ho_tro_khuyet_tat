@@ -8,9 +8,9 @@ import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/widgets.dart';
-import '../my_camera_controller.dart';
 
-final faceDetectController =
+import '../blind_camera_controller.dart';
+final faceRecognitionController =
     StateNotifierProvider<FaceRecognitionController, List<double>>(
   FaceRecognitionController.new,
 );
@@ -56,8 +56,8 @@ class FaceRecognitionController extends StateNotifier<List<double>> {
           v: cameraImage.planes[2].bytes,
           height: cameraImage.height,
           deviceOrientationType:
-              ref.read(myCameraController).deviceOrientationType,
-          sensorOrientation: ref.read(myCameraController).sensorOrientation,
+              ref.read(blindCameraController).deviceOrientationType,
+          sensorOrientation: ref.read(blindCameraController).sensorOrientation,
           onDecodeImage: (image) {
             ref.read(previewImage.notifier).state = image;
             completer.complete();

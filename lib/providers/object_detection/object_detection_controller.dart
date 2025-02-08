@@ -6,9 +6,9 @@ import 'package:camera/camera.dart';
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../my_camera_controller.dart';
+import '../blind_camera_controller.dart';
 
-final faceDetectController =
+final objectDetectController =
     StateNotifierProvider<ObjectDetectionController, List<YoloResult>>(
   ObjectDetectionController.new,
 );
@@ -42,8 +42,8 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
           v: cameraImage.planes[2].bytes,
           height: cameraImage.height,
           deviceOrientationType:
-          ref.read(myCameraController).deviceOrientationType,
-          sensorOrientation: ref.read(myCameraController).sensorOrientation,
+          ref.read(blindCameraController).deviceOrientationType,
+          sensorOrientation: ref.read(blindCameraController).sensorOrientation,
           onDecodeImage: (image) {
             ref.read(previewImage.notifier).state = image;
             completer.complete();
@@ -74,8 +74,8 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
               v: cameraImage.planes[2].bytes,
               height: cameraImage.height,
               deviceOrientationType:
-                  ref.read(myCameraController).deviceOrientationType,
-              sensorOrientation: ref.read(myCameraController).sensorOrientation,
+                  ref.read(blindCameraController).deviceOrientationType,
+              sensorOrientation: ref.read(blindCameraController).sensorOrientation,
               onDecodeImage: (image) {
                 ref.read(previewImage.notifier).state = image;
                 completer.complete();

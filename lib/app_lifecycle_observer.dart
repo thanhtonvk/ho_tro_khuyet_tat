@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'providers/my_camera_controller.dart';
-
+import 'package:nguoi_khuyet_tat/providers/blind_camera_controller.dart';
 class _AppLifecycleObserver extends NavigatorObserver
     with WidgetsBindingObserver {
   _AppLifecycleObserver({
@@ -33,7 +31,7 @@ final appLifecycleObserver = Provider(
   (ref) {
     final observer = _AppLifecycleObserver(
       onInactive: () {
-        ref.read(myCameraController).stopImageStream();
+        ref.read(blindCameraController).stopImageStream();
       },
     );
 

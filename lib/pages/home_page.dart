@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../views/detect_view.dart';
-import '../views/photo_view.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.title});
@@ -23,7 +22,6 @@ class _HomePageState extends State<HomePage> {
       ),
       body: switch (currentPageIndex) {
         0 => const DetectView(),
-        1 => const PhotoView(),
         int() => throw UnimplementedError(),
       },
       bottomNavigationBar: NavigationBar(

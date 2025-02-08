@@ -6,10 +6,10 @@ import 'package:camera/camera.dart';
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../my_camera_controller.dart';
+import '../blind_camera_controller.dart';
 
-final faceDetectController =
-StateNotifierProvider<DeafDetectionController, List<YoloResult>>(
+final deafDetectionController =
+    StateNotifierProvider<DeafDetectionController, List<YoloResult>>(
   DeafDetectionController.new,
 );
 
@@ -21,12 +21,13 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
   final nguoiKhuyetTatSDK = NguoiKhuyetTatSdk();
 
   static final previewImage = StateProvider<ui.Image?>(
-        (_) => null,
+    (_) => null,
   );
 
   Future<void> initialize() async {
     await nguoiKhuyetTatSDK.load(isBlind: false, isDeaf: true);
   }
+
   Future<void> detectDeaf(CameraImage cameraImage) async {
     final completer = Completer<void>();
     switch (cameraImage.format.group) {
@@ -37,18 +38,18 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
       case ImageFormatGroup.yuv420:
         state = nguoiKhuyetTatSDK
             .detectDeafYUV420(
-          y: cameraImage.planes[0].bytes,
-          u: cameraImage.planes[1].bytes,
-          v: cameraImage.planes[2].bytes,
-          height: cameraImage.height,
-          deviceOrientationType:
-          ref.read(myCameraController).deviceOrientationType,
-          sensorOrientation: ref.read(myCameraController).sensorOrientation,
-          onDecodeImage: (image) {
-            ref.read(previewImage.notifier).state = image;
-            completer.complete();
-          },
-        )
+              y: cameraImage.planes[0].bytes,
+              u: cameraImage.planes[1].bytes,
+              v: cameraImage.planes[2].bytes,
+              height: cameraImage.height,
+              deviceOrientationType:
+                  ref.read(blindCameraController).deviceOrientationType,
+              sensorOrientation: ref.read(blindCameraController).sensorOrientation,
+              onDecodeImage: (image) {
+                ref.read(previewImage.notifier).state = image;
+                completer.complete();
+              },
+            )
             .result;
         break;
       case ImageFormatGroup.nv21:

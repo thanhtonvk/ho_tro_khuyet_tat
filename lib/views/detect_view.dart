@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:nguoi_khuyet_tat/providers/blind_camera_controller.dart';
 
 import '../pages/camera_page.dart';
-import '../providers/my_camera_controller.dart';
 
 class DetectView extends HookConsumerWidget {
   const DetectView({super.key,});
@@ -18,7 +18,7 @@ class DetectView extends HookConsumerWidget {
           ),
           FloatingActionButton(
             onPressed: () {
-              ref.read(myCameraController).startImageStream();
+              ref.read(blindCameraController).startImageStream();
               Navigator.push(
                 context,
                 MaterialPageRoute(
