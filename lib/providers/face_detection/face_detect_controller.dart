@@ -26,7 +26,7 @@ class FaceDetectController extends StateNotifier<List<FaceResult>> {
   );
 
   Future<void> initialize() async {
-    await nguoiKhuyetTatSDK.load(isBlind: true, isDeaf: false);
+    await nguoiKhuyetTatSDK.load(isBlind: true, isDeaf: false, objectModel: 'assets/yolo/yolov8n.bin', objectParam: 'assets/yolo/yolov8n.param');
   }
 
   Future<void> detectFace(CameraImage cameraImage) async {

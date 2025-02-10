@@ -25,8 +25,13 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
   );
 
   Future<void> initialize() async {
-    await nguoiKhuyetTatSDK.load(isBlind: true, isDeaf: false);
+    await nguoiKhuyetTatSDK.load(
+        isBlind: true,
+        isDeaf: false,
+        objectModel: 'assets/yolo/yolov8n.bin',
+        objectParam: 'assets/yolo/yolov8n.param');
   }
+
   Future<void> detectMoney(CameraImage cameraImage) async {
     final completer = Completer<void>();
     switch (cameraImage.format.group) {
@@ -37,18 +42,19 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
       case ImageFormatGroup.yuv420:
         state = nguoiKhuyetTatSDK
             .detectMoneyYUV420(
-          y: cameraImage.planes[0].bytes,
-          u: cameraImage.planes[1].bytes,
-          v: cameraImage.planes[2].bytes,
-          height: cameraImage.height,
-          deviceOrientationType:
-          ref.read(blindCameraController).deviceOrientationType,
-          sensorOrientation: ref.read(blindCameraController).sensorOrientation,
-          onDecodeImage: (image) {
-            ref.read(previewImage.notifier).state = image;
-            completer.complete();
-          },
-        )
+              y: cameraImage.planes[0].bytes,
+              u: cameraImage.planes[1].bytes,
+              v: cameraImage.planes[2].bytes,
+              height: cameraImage.height,
+              deviceOrientationType:
+                  ref.read(blindCameraController).deviceOrientationType,
+              sensorOrientation:
+                  ref.read(blindCameraController).sensorOrientation,
+              onDecodeImage: (image) {
+                ref.read(previewImage.notifier).state = image;
+                completer.complete();
+              },
+            )
             .result;
         break;
       case ImageFormatGroup.nv21:
@@ -75,7 +81,8 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
               height: cameraImage.height,
               deviceOrientationType:
                   ref.read(blindCameraController).deviceOrientationType,
-              sensorOrientation: ref.read(blindCameraController).sensorOrientation,
+              sensorOrientation:
+                  ref.read(blindCameraController).sensorOrientation,
               onDecodeImage: (image) {
                 ref.read(previewImage.notifier).state = image;
                 completer.complete();
@@ -86,7 +93,20 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
       case ImageFormatGroup.nv21:
         break;
       case ImageFormatGroup.bgra8888:
-        break;
+        state = nguoiKhuyetTatSDK
+            .detectObjectBGRA8888(
+              pixels: cameraImage.planes[0].bytes,
+              height: cameraImage.height,
+              deviceOrientationType:
+                  ref.read(blindCameraController).deviceOrientationType,
+              sensorOrientation:
+                  ref.read(blindCameraController).sensorOrientation,
+              onDecodeImage: (image) {
+                ref.read(previewImage.notifier).state = image;
+                completer.complete();
+              },
+            )
+            .result;
     }
     return completer.future;
   }

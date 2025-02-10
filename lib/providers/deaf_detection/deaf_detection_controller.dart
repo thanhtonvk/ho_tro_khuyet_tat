@@ -25,7 +25,7 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
   );
 
   Future<void> initialize() async {
-    await nguoiKhuyetTatSDK.load(isBlind: false, isDeaf: true);
+    await nguoiKhuyetTatSDK.load(isBlind: false, isDeaf: true, objectModel: 'assets/yolo/yolov8n.bin', objectParam: 'assets/yolo/yolov8n.param');
   }
 
   Future<void> detectDeaf(CameraImage cameraImage) async {
