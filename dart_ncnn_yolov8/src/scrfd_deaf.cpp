@@ -206,7 +206,7 @@ int SCRFD_DEAF::load() {
     scrfd_deaf.opt = ncnn::Option();
 
 #if NCNN_VULKAN
-    scrfd_deaf.opt.use_vulkan_compute = use_gpu;
+    scrfd_deaf.opt.use_vulkan_compute = false;
 #endif
 
     scrfd_deaf.opt.num_threads = ncnn::get_big_cpu_count();

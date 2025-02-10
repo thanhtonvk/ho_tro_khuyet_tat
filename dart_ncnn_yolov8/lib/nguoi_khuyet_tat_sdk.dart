@@ -4,7 +4,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:dart_ncnn_yolov8/models/face_detect_result.dart';
+import 'package:dart_ncnn_yolov8/models/models.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -60,16 +62,23 @@ class NguoiKhuyetTatSdk {
   Future<void> load(
       {required bool isBlind,
       required bool isDeaf,
+      required String objectModel,
+      required String objectParam,
       bool autoDispose = true}) async {
     if (autoDispose) {
       unLoad();
     }
+    final tempObjectModel = (await _copy(objectModel)).toNativeUtf8();
+    final tempObjectParam = (await _copy(objectParam)).toNativeUtf8();
     if (isBlind && !isDeaf) {
-      _bindings.load(0, 1);
+      _bindings.load(0, 1, tempObjectModel as Pointer<Char>,
+          tempObjectParam as Pointer<Char>);
     } else if (!isBlind && isDeaf) {
-      _bindings.load(1, 0);
+      _bindings.load(1, 0, tempObjectModel as Pointer<Char>,
+          tempObjectParam as Pointer<Char>);
     } else if (isBlind && isDeaf) {
-      _bindings.load(1, 1);
+      _bindings.load(1, 1, tempObjectModel as Pointer<Char>,
+          tempObjectParam as Pointer<Char>);
     }
   }
 
@@ -350,20 +359,62 @@ class NguoiKhuyetTatSdk {
   }
 
   List<YoloResult> detectObject(
-      {required Uint8List pixels, required int width, required int height}) {
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
     final results = YoloResult.create(_bindings
-        .detectObject(pixelsNative, width, height)
+        .detectObject(pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString());
     calloc.free(pixelsNative);
     return results;
   }
+  DetectResult detectObjectBGRA8888({
+    required Uint8List pixels,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the pixels.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+  }) {
+    final width = pixels.length ~/ height ~/ 4;
 
+    final rotated = kannaRotate(
+      pixels: pixels,
+      pixelChannel: PixelChannel.c4,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      ui.decodeImageFromPixels(
+        pixels,
+        width,
+        height,
+        ui.PixelFormat.bgra8888,
+        onDecodeImage,
+      );
+    }
+
+    return DetectResult(
+      result: detectObject(
+        pixels: rotated.pixels ?? Uint8List(0),
+        pixelFormat: PixelFormat.bgra,
+        width: rotated.width,
+        height: rotated.height,
+      ),
+      image: rotated,
+    );
+  }
   DetectResult detectObjectYUV420({
     required Uint8List y,
     required Uint8List u,

@@ -189,7 +189,7 @@ static void generate_proposals(std::vector <GridAndStride> grid_strides, const n
             }
         }
         float box_prob = sigmoid(score);
-        if (box_prob >= prob_threshold) {
+        if (box_prob >= 0.3) {
             ncnn::Mat bbox_pred(reg_max_1, 4, (void *) pred.row(i));
             {
                 ncnn::Layer *softmax = ncnn::create_layer("Softmax");
@@ -250,8 +250,9 @@ ObjectDetection::ObjectDetection() {
 }
 
 
-int ObjectDetection::load(int _target_size, const float *_mean_vals,
-                          const float *_norm_vals) {
+int ObjectDetection::load(int _target_size, const float *_mean_vals, const float *_norm_vals,
+                          const char *model_path,
+                          const char *param_path) {
     yolo.clear();
     blob_pool_allocator.clear();
     workspace_pool_allocator.clear();
@@ -262,20 +263,15 @@ int ObjectDetection::load(int _target_size, const float *_mean_vals,
     yolo.opt = ncnn::Option();
 
 #if NCNN_VULKAN
-    yolo.opt.use_vulkan_compute = use_gpu;
+    yolo.opt.use_vulkan_compute = false;
 #endif
 
     yolo.opt.num_threads = ncnn::get_big_cpu_count();
     yolo.opt.blob_allocator = &blob_pool_allocator;
     yolo.opt.workspace_allocator = &workspace_pool_allocator;
 
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "assets/yolo/yolov8n.param");
-    sprintf(modelpath, "assets/yolo/yolov8n.bin");
-
-    yolo.load_param(parampath);
-    yolo.load_model(modelpath);
+    yolo.load_param(param_path);
+    yolo.load_model(model_path);
 
     target_size = _target_size;
     mean_vals[0] = _mean_vals[0];
@@ -288,10 +284,10 @@ int ObjectDetection::load(int _target_size, const float *_mean_vals,
     return 0;
 }
 
-int ObjectDetection::detect(const cv::Mat &rgb, std::vector <Object> &objects, float prob_threshold,
-                            float nms_threshold) {
-    int width = rgb.cols;
-    int height = rgb.rows;
+int
+ObjectDetection::detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects,
+                        int width,
+                        int height) {
 
     // pad to multiple of 32
     int w = width;
@@ -307,7 +303,7 @@ int ObjectDetection::detect(const cv::Mat &rgb, std::vector <Object> &objects, f
         w = w * scale;
     }
 
-    ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data, ncnn::Mat::PIXEL_RGB, width, height,
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(pixels, pixelType, width, height,
                                                  w, h);
 
     // pad to target_size rectangle
@@ -331,14 +327,14 @@ int ObjectDetection::detect(const cv::Mat &rgb, std::vector <Object> &objects, f
     std::vector<int> strides = {8, 16, 32}; // might have stride=64
     std::vector <GridAndStride> grid_strides;
     generate_grids_and_stride(in_pad.w, in_pad.h, strides, grid_strides);
-    generate_proposals(grid_strides, out, prob_threshold, proposals);
+    generate_proposals(grid_strides, out, 0.3, proposals);
 
     // sort all proposals by score from highest to lowest
     qsort_descent_inplace(proposals);
 
     // apply nms with nms_threshold
     std::vector<int> picked;
-    nms_sorted_bboxes(proposals, picked, nms_threshold);
+    nms_sorted_bboxes(proposals, picked, 0.3);
 
     int count = picked.size();
 

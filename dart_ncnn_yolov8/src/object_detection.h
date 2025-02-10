@@ -20,11 +20,12 @@ class ObjectDetection {
 public:
     ObjectDetection();
 
-    int load(int _target_size, const float *_mean_vals,
-             const float *_norm_vals);
+    int
+    load(int _target_size, const float *_mean_vals, const float *_norm_vals, const char *model_path,
+         const char *param_path);
 
-    int detect(const cv::Mat &rgb, std::vector <Object> &objects, float prob_threshold = 0.3f,
-               float nms_threshold = 0.3f);
+    int detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects, int width,
+               int height);
 
 private:
     ncnn::Net yolo;

@@ -112,16 +112,23 @@ class NguoiKhuyetTatSDKBindings {
   void load(
     int deaf,
     int blind,
+    ffi.Pointer<ffi.Char> object_detection_model,
+    ffi.Pointer<ffi.Char> object_detection_param,
   ) {
     return _load(
       deaf,
       blind,
+      object_detection_model,
+      object_detection_param,
     );
   }
 
-  late final _loadPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int, ffi.Int)>>('load');
-  late final _load = _loadPtr.asFunction<void Function(int, int)>();
+  late final _loadPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int, ffi.Int, ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>)>>('load');
+  late final _load = _loadPtr.asFunction<
+      void Function(int, int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
 
   void unLoad() {
     return _unLoad();
@@ -209,11 +216,13 @@ class NguoiKhuyetTatSDKBindings {
 
   ffi.Pointer<ffi.Char> detectObject(
     ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
     int width,
     int height,
   ) {
     return _detectObject(
       pixels,
+      pixelType,
       width,
       height,
     );
@@ -222,10 +231,10 @@ class NguoiKhuyetTatSDKBindings {
   late final _detectObjectPtr = _lookup<
       ffi.NativeFunction<
           ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int)>>('detectObject');
+              ffi.Int, ffi.Int)>>('detectObject');
   late final _detectObject = _detectObjectPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   ffi.Pointer<ffi.Char> predictLightTraffic(
     ffi.Pointer<ffi.UnsignedChar> pixels,

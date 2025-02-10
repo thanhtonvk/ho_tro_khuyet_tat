@@ -211,7 +211,7 @@ static void generate_proposals(const ncnn::Mat& anchors, int feat_stride, const 
     }
 }
 
-int SCRFD::load(const char* modeltype, bool use_gpu)
+int SCRFD::load()
 {
     scrfd.clear();
 
@@ -221,15 +221,15 @@ int SCRFD::load(const char* modeltype, bool use_gpu)
     scrfd.opt = ncnn::Option();
 
 #if NCNN_VULKAN
-    scrfd.opt.use_vulkan_compute = use_gpu;
+    scrfd.opt.use_vulkan_compute = false;
 #endif
 
     scrfd.opt.num_threads = ncnn::get_big_cpu_count();
 
     char parampath[256];
     char modelpath[256];
-    sprintf(parampath, "assets/yolo/scrfd_2.5g_kps-opt2.param", modeltype);
-    sprintf(modelpath, "assets/yolo/scrfd_2.5g_kps-opt2.bin", modeltype);
+    sprintf(parampath, "assets/yolo/scrfd_2.5g_kps-opt2.param");
+    sprintf(modelpath, "assets/yolo/scrfd_2.5g_kps-opt2.bin");
 
     scrfd.load_param(parampath);
     scrfd.load_model(modelpath);

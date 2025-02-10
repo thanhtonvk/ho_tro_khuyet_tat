@@ -21,10 +21,18 @@ include_directories(
         ${PROJECT_FOLDER}/src
         ${OpenCV_INCLUDE_DIRS}
 )
-
 add_library(nguoi_khuyet_tat_sdk SHARED
-        "nguoi_khuyet_tat_sdk.cpp" , "deaf_detection.cpp" , "emotion_recognition.cpp" ,"face_emb.cpp", "light_traffic.cpp" , "money_detection.cpp" , "object_detection.cpp" ,"scrfd_deaf.cpp", "scrfd.cpp"
+        "scrfd_deaf.cpp"
+        "nguoi_khuyet_tat_sdk.cpp"
+        "deaf_detection.cpp"
+        "emotion_recognition.cpp"
+        "light_traffic.cpp"
+        "money_detection.cpp"
+        "object_detection.cpp"
+        "scrfd.cpp"
+        "face_emb.cpp"
 )
+
 
 set_target_properties(nguoi_khuyet_tat_sdk PROPERTIES
         PUBLIC_HEADER nguoi_khuyet_tat_sdk.h

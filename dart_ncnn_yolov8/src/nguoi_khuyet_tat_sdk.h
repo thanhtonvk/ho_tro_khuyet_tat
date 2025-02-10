@@ -29,7 +29,7 @@ kannaRotate(const unsigned char *src, int channel, int srcw, int srch, unsigned 
             int dsw, int dsh, int type);
 
 FFI_PLUGIN_EXPORT void
-load(int deaf, int blind);
+load(int deaf, int blind, char *object_detection_model, char *object_detection_param);
 
 FFI_PLUGIN_EXPORT void unLoad();
 
@@ -42,7 +42,7 @@ FFI_PLUGIN_EXPORT char *getEmbeddingWithPixels(const unsigned char *pixels, int 
 
 FFI_PLUGIN_EXPORT char *detectMoney(const unsigned char *pixels, int width, int height);
 
-FFI_PLUGIN_EXPORT char *detectObject(const unsigned char *pixels, int width, int height);
+FFI_PLUGIN_EXPORT char *detectObject(const unsigned char *pixels, int pixelType, int width, int height);
 
 FFI_PLUGIN_EXPORT char *predictLightTraffic(const unsigned char *pixels, int width, int height);
 
