@@ -6,16 +6,15 @@
 #include "object_detection.h"
 
 
-class MoneyDetection
-{
+class MoneyDetection {
 public:
     MoneyDetection();
 
-    int load(int target_size, const float* norm_vals);
+    int load(int target_size, const float *norm_vals,const char *model_path,
+             const char *param_path);
 
-    int detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold = 0.5f, float nms_threshold = 0.2f);
-
-    int draw(cv::Mat& rgb, const std::vector<Object>& objects);
+    int detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects, int width,
+               int height, float prob_threshold = 0.5f, float nms_threshold = 0.2f);
 
 private:
 

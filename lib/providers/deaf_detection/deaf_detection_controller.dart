@@ -25,7 +25,25 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
   );
 
   Future<void> initialize() async {
-    await nguoiKhuyetTatSDK.load(isBlind: false, isDeaf: true, objectModel: 'assets/yolo/yolov8n.bin', objectParam: 'assets/yolo/yolov8n.param');
+    await nguoiKhuyetTatSDK.load(
+        isBlind: false,
+        isDeaf: true,
+        objectModel: 'assets/yolo/yolov8n.bin',
+        objectParam: 'assets/yolo/yolov8n.param',
+        faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+        faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+        lightModel: '',
+        lightParam: '',
+        emotionModel: '',
+        emotionParam: '',
+        faceRegModel: '',
+        faceRegParam: '',
+        faceDeafModel: '',
+        faceDeafParam: '',
+        deafModel: '',
+        deafParam: '',
+        moneyModel: '',
+        moneyParam: '');
   }
 
   Future<void> detectDeaf(CameraImage cameraImage) async {
@@ -44,7 +62,8 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
               height: cameraImage.height,
               deviceOrientationType:
                   ref.read(blindCameraController).deviceOrientationType,
-              sensorOrientation: ref.read(blindCameraController).sensorOrientation,
+              sensorOrientation:
+                  ref.read(blindCameraController).sensorOrientation,
               onDecodeImage: (image) {
                 ref.read(previewImage.notifier).state = image;
                 completer.complete();

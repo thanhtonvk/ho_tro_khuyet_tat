@@ -6,14 +6,16 @@
 #include "object_detection.h"
 
 
-class DeafDetection
-{
+class DeafDetection {
 public:
     DeafDetection();
 
-    int load(int target_size, const float* norm_vals, bool use_gpu = false);
+    int load(int _target_size, const float *_norm_vals, const char *model_path,
+             const char *param_path);
 
-    int detect(const cv::Mat& rgb, std::vector<Object>& objects, float prob_threshold = 0.5f, float nms_threshold = 0.2f);
+    int detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects,
+               int width,
+               int height, float prob_threshold = 0.5f, float nms_threshold = 0.3f);
 
 
 private:

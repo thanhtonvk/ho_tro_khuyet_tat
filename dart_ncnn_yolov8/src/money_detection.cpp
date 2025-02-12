@@ -20,7 +20,7 @@ static inline float intersection_area(const Object &a, const Object &b) {
     return inter_width * inter_height;
 }
 
-static void qsort_descent_inplace(std::vector<Object> &faceobjects, int left, int right) {
+static void qsort_descent_inplace(std::vector <Object> &faceobjects, int left, int right) {
     int i = left;
     int j = right;
     float p = faceobjects[(left + right) / 2].prob;
@@ -54,14 +54,14 @@ static void qsort_descent_inplace(std::vector<Object> &faceobjects, int left, in
     }
 }
 
-static void qsort_descent_inplace(std::vector<Object> &faceobjects) {
+static void qsort_descent_inplace(std::vector <Object> &faceobjects) {
     if (faceobjects.empty())
         return;
 
     qsort_descent_inplace(faceobjects, 0, faceobjects.size() - 1);
 }
 
-static void nms_sorted_bboxes(const std::vector<Object> &faceobjects, std::vector<int> &picked,
+static void nms_sorted_bboxes(const std::vector <Object> &faceobjects, std::vector<int> &picked,
                               float nms_threshold) {
     picked.clear();
 
@@ -98,7 +98,8 @@ static inline float sigmoid(float x) {
 
 
 static void
-generate_proposals(const ncnn::Mat &feat_blob, float prob_threshold, std::vector<Object> &objects) {
+generate_proposals(const ncnn::Mat &feat_blob, float prob_threshold,
+                   std::vector <Object> &objects) {
     float *data = (float *) feat_blob.data;
     for (int i = 0; i < feat_blob.h; i++) {
         int class_index = -1;
@@ -146,7 +147,8 @@ MoneyDetection::MoneyDetection() {
     workspace_pool_allocator.set_size_compare_ratio(0.f);
 }
 
-int MoneyDetection::load(int _target_size, const float *_norm_vals) {
+int MoneyDetection::load(int _target_size, const float *_norm_vals, const char *model_path,
+                         const char *param_path) {
     yolo.clear();
     blob_pool_allocator.clear();
     workspace_pool_allocator.clear();
@@ -160,14 +162,14 @@ int MoneyDetection::load(int _target_size, const float *_norm_vals) {
     yolo.opt.blob_allocator = &blob_pool_allocator;
     yolo.opt.workspace_allocator = &workspace_pool_allocator;
     yolo.opt.use_vulkan_compute = false;
-
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "assets/yolo/money_detection.param");
-    sprintf(modelpath, "assets/yolo/money_detection.bin");
-
-    yolo.load_param(parampath);
-    yolo.load_model(modelpath);
+//
+//    char parampath[256];
+//    char modelpath[256];
+//    sprintf(parampath, "assets/yolo/money_detection.param");
+//    sprintf(modelpath, "assets/yolo/money_detection.bin");
+//
+    yolo.load_param(param_path);
+    yolo.load_model(model_path);
 
     target_size = _target_size;
     norm_vals[0] = _norm_vals[0];
@@ -177,10 +179,10 @@ int MoneyDetection::load(int _target_size, const float *_norm_vals) {
     return 0;
 }
 
-int MoneyDetection::detect(const cv::Mat &rgb, std::vector<Object> &objects, float prob_threshold,
-                   float nms_threshold) {
-    int width = rgb.cols;
-    int height = rgb.rows;
+int
+MoneyDetection::detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects,
+                       int width,
+                       int height, float prob_threshold, float nms_threshold) {
 
     int w = width;
     int h = height;
@@ -195,7 +197,7 @@ int MoneyDetection::detect(const cv::Mat &rgb, std::vector<Object> &objects, flo
         w = w * scale;
     }
 
-    ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data, ncnn::Mat::PIXEL_RGB, width, height,
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(pixels, pixelType, width, height,
                                                  w, h);
 
     int dw = target_size - w;
@@ -235,7 +237,7 @@ int MoneyDetection::detect(const cv::Mat &rgb, std::vector<Object> &objects, flo
 
     int count = picked.size();
 
-    std::vector<Object> newobjects;
+    std::vector <Object> newobjects;
     newobjects.resize(count);
     for (int i = 0; i < count; i++) {
 
@@ -262,7 +264,7 @@ int MoneyDetection::detect(const cv::Mat &rgb, std::vector<Object> &objects, flo
 
 }
 
-int MoneyDetection::draw(cv::Mat &rgb, const std::vector<Object> &objects) {
+int MoneyDetection::draw(cv::Mat &rgb, const std::vector <Object> &objects) {
     static const char *class_names_money[] = {"100k",
                                               "10k",
                                               "1k",

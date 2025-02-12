@@ -152,7 +152,8 @@ DeafDetection::DeafDetection() {
 }
 
 int
-DeafDetection::load(int _target_size, const float *_norm_vals, bool use_gpu) {
+DeafDetection::load(int _target_size, const float *_norm_vals, const char *model_path,
+                    const char *param_path) {
     yolo.clear();
     blob_pool_allocator.clear();
     workspace_pool_allocator.clear();
@@ -167,13 +168,13 @@ DeafDetection::load(int _target_size, const float *_norm_vals, bool use_gpu) {
     yolo.opt.workspace_allocator = &workspace_pool_allocator;
     yolo.opt.use_vulkan_compute = false;
 
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "assets/yolo/best_cu_chi_v9.param");
-    sprintf(modelpath, "assets/yolo/best_cu_chi_v9.bin");
+//    char parampath[256];
+//    char modelpath[256];
+//    sprintf(parampath, "assets/yolo/best_cu_chi_v9.param");
+//    sprintf(modelpath, "assets/yolo/best_cu_chi_v9.bin");
 
-    yolo.load_param(parampath);
-    yolo.load_model(modelpath);
+    yolo.load_param(param_path);
+    yolo.load_model(model_path);
 
     target_size = _target_size;
     norm_vals[0] = _norm_vals[0];
@@ -183,10 +184,9 @@ DeafDetection::load(int _target_size, const float *_norm_vals, bool use_gpu) {
     return 0;
 }
 
-int DeafDetection::detect(const cv::Mat &rgb, std::vector <Object> &objects, float prob_threshold,
-                          float nms_threshold) {
-    int width = rgb.cols;
-    int height = rgb.rows;
+int DeafDetection::detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects,
+                          int width,
+                          int height, float prob_threshold, float nms_threshold) {
 
     int w = width;
     int h = height;
@@ -201,7 +201,7 @@ int DeafDetection::detect(const cv::Mat &rgb, std::vector <Object> &objects, flo
         w = w * scale;
     }
 
-    ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data, ncnn::Mat::PIXEL_RGB, width, height,
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(pixels, pixelType, width, height,
                                                  w, h);
 
     int dw = target_size - w;

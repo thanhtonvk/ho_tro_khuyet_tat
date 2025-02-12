@@ -197,39 +197,38 @@ generate_proposals(const ncnn::Mat &anchors, int feat_stride, const ncnn::Mat &s
     }
 }
 
-int SCRFD_DEAF::load() {
-    scrfd_deaf.clear();
+int SCRFD_DEAF::load(const char *model_path,
+                     const char *param_path) {
+    scrfd.clear();
 
     ncnn::set_cpu_powersave(2);
     ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
 
-    scrfd_deaf.opt = ncnn::Option();
+    scrfd.opt = ncnn::Option();
 
 #if NCNN_VULKAN
-    scrfd_deaf.opt.use_vulkan_compute = false;
+    scrfd.opt.use_vulkan_compute = false;
 #endif
 
-    scrfd_deaf.opt.num_threads = ncnn::get_big_cpu_count();
+    scrfd.opt.num_threads = ncnn::get_big_cpu_count();
 
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "assets/yolo/scrfd_2.5g_kps-opt2.param");
-    sprintf(modelpath, "assets/yolo/scrfd_2.5g_kps-opt2.bin");
+//    char parampath[256];
+//    char modelpath[256];
+//    sprintf(parampath, "assets/yolo/scrfd_2.5g_kps-opt2.param");
+//    sprintf(modelpath, "assets/yolo/scrfd_2.5g_kps-opt2.bin");
 
-    scrfd_deaf.load_param(parampath);
-    scrfd_deaf.load_model(modelpath);
+    scrfd.load_param(param_path);
+    scrfd.load_model(model_path);
 
     return 0;
 }
 
 
 int
-SCRFD_DEAF::detect(const cv::Mat &rgb, std::vector <FaceObject> &faceobjects, float prob_threshold,
+SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
+                   std::vector <FaceObject> &faceobjects,
+                   int width, int height, float prob_threshold,
                    float nms_threshold) {
-    int width = rgb.cols;
-    int height = rgb.rows;
-
-    // insightface/detection/scrfd_deaf/configs/scrfd_deaf/scrfd_deaf_500m.py
     const int target_size = 640;
 
     // pad to multiple of 32
@@ -246,8 +245,7 @@ SCRFD_DEAF::detect(const cv::Mat &rgb, std::vector <FaceObject> &faceobjects, fl
         w = w * scale;
     }
 
-    ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data, ncnn::Mat::PIXEL_RGB, width, height, w,
-                                                 h);
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(pixels, pixelType, width, height, w, h);
 
     // pad to target_size rectangle
     int wpad = (w + 31) / 32 * 32 - w;
@@ -260,7 +258,7 @@ SCRFD_DEAF::detect(const cv::Mat &rgb, std::vector <FaceObject> &faceobjects, fl
     const float norm_vals[3] = {1 / 128.f, 1 / 128.f, 1 / 128.f};
     in_pad.substract_mean_normalize(mean_vals, norm_vals);
 
-    ncnn::Extractor ex = scrfd_deaf.create_extractor();
+    ncnn::Extractor ex = scrfd.create_extractor();
 
     ex.input("input.1", in_pad);
 

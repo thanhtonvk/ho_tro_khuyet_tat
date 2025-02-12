@@ -114,21 +114,84 @@ class NguoiKhuyetTatSDKBindings {
     int blind,
     ffi.Pointer<ffi.Char> object_detection_model,
     ffi.Pointer<ffi.Char> object_detection_param,
+    ffi.Pointer<ffi.Char> face_detection_model,
+    ffi.Pointer<ffi.Char> face_detection_param,
+    ffi.Pointer<ffi.Char> light_traffic_model,
+    ffi.Pointer<ffi.Char> light_traffic_param,
+    ffi.Pointer<ffi.Char> emotion_model,
+    ffi.Pointer<ffi.Char> emotion_param,
+    ffi.Pointer<ffi.Char> face_reg_model,
+    ffi.Pointer<ffi.Char> face_reg_param,
+    ffi.Pointer<ffi.Char> face_deaf_model,
+    ffi.Pointer<ffi.Char> face_deaf_param,
+    ffi.Pointer<ffi.Char> deaf_model,
+    ffi.Pointer<ffi.Char> deaf_param,
+    ffi.Pointer<ffi.Char> money_model,
+    ffi.Pointer<ffi.Char> model_param,
   ) {
     return _load(
       deaf,
       blind,
       object_detection_model,
       object_detection_param,
+      face_detection_model,
+      face_detection_param,
+      light_traffic_model,
+      light_traffic_param,
+      emotion_model,
+      emotion_param,
+      face_reg_model,
+      face_reg_param,
+      face_deaf_model,
+      face_deaf_param,
+      deaf_model,
+      deaf_param,
+      money_model,
+      model_param,
     );
   }
 
   late final _loadPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Void Function(ffi.Int, ffi.Int, ffi.Pointer<ffi.Char>,
+          ffi.Void Function(
+              ffi.Int,
+              ffi.Int,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>)>>('load');
   late final _load = _loadPtr.asFunction<
-      void Function(int, int, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>();
+      void Function(
+          int,
+          int,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>)>();
 
   void unLoad() {
     return _unLoad();
@@ -155,11 +218,13 @@ class NguoiKhuyetTatSDKBindings {
 
   ffi.Pointer<ffi.Char> detectFaceObjectWithPixels(
     ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
     int width,
     int height,
   ) {
     return _detectFaceObjectWithPixels(
       pixels,
+      pixelType,
       width,
       height,
     );
@@ -168,19 +233,21 @@ class NguoiKhuyetTatSDKBindings {
   late final _detectFaceObjectWithPixelsPtr = _lookup<
       ffi.NativeFunction<
           ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int)>>('detectFaceObjectWithPixels');
+              ffi.Int, ffi.Int)>>('detectFaceObjectWithPixels');
   late final _detectFaceObjectWithPixels =
       _detectFaceObjectWithPixelsPtr.asFunction<
           ffi.Pointer<ffi.Char> Function(
-              ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+              ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   ffi.Pointer<ffi.Char> getEmbeddingWithPixels(
     ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
     int width,
     int height,
   ) {
     return _getEmbeddingWithPixels(
       pixels,
+      pixelType,
       width,
       height,
     );
@@ -189,18 +256,20 @@ class NguoiKhuyetTatSDKBindings {
   late final _getEmbeddingWithPixelsPtr = _lookup<
       ffi.NativeFunction<
           ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int)>>('getEmbeddingWithPixels');
+              ffi.Int, ffi.Int)>>('getEmbeddingWithPixels');
   late final _getEmbeddingWithPixels = _getEmbeddingWithPixelsPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   ffi.Pointer<ffi.Char> detectMoney(
     ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
     int width,
     int height,
   ) {
     return _detectMoney(
       pixels,
+      pixelType,
       width,
       height,
     );
@@ -208,11 +277,11 @@ class NguoiKhuyetTatSDKBindings {
 
   late final _detectMoneyPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.Char> Function(
-              ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int)>>('detectMoney');
+          ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+              ffi.Int, ffi.Int)>>('detectMoney');
   late final _detectMoney = _detectMoneyPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   ffi.Pointer<ffi.Char> detectObject(
     ffi.Pointer<ffi.UnsignedChar> pixels,
@@ -238,11 +307,13 @@ class NguoiKhuyetTatSDKBindings {
 
   ffi.Pointer<ffi.Char> predictLightTraffic(
     ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
     int width,
     int height,
   ) {
     return _predictLightTraffic(
       pixels,
+      pixelType,
       width,
       height,
     );
@@ -251,18 +322,20 @@ class NguoiKhuyetTatSDKBindings {
   late final _predictLightTrafficPtr = _lookup<
       ffi.NativeFunction<
           ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int)>>('predictLightTraffic');
+              ffi.Int, ffi.Int)>>('predictLightTraffic');
   late final _predictLightTraffic = _predictLightTrafficPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   ffi.Pointer<ffi.Char> predictDeaf(
     ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
     int width,
     int height,
   ) {
     return _predictDeaf(
       pixels,
+      pixelType,
       width,
       height,
     );
@@ -270,19 +343,21 @@ class NguoiKhuyetTatSDKBindings {
 
   late final _predictDeafPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.Char> Function(
-              ffi.Pointer<ffi.UnsignedChar>, ffi.Int, ffi.Int)>>('predictDeaf');
+          ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+              ffi.Int, ffi.Int)>>('predictDeaf');
   late final _predictDeaf = _predictDeafPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 
   ffi.Pointer<ffi.Char> predictEmotion(
     ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
     int width,
     int height,
   ) {
     return _predictEmotion(
       pixels,
+      pixelType,
       width,
       height,
     );
@@ -291,8 +366,8 @@ class NguoiKhuyetTatSDKBindings {
   late final _predictEmotionPtr = _lookup<
       ffi.NativeFunction<
           ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int)>>('predictEmotion');
+              ffi.Int, ffi.Int)>>('predictEmotion');
   late final _predictEmotion = _predictEmotionPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.UnsignedChar>, int, int)>();
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 }

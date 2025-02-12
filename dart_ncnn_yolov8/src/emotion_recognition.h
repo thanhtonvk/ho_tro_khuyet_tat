@@ -13,9 +13,12 @@ class EmotionRecognition {
 public:
     EmotionRecognition();
 
-    int load();
+    int load(const char *model_path,
+             const char *param_path);
 
-    int predict(const cv::Mat& src, FaceObject &faceobject, std::vector<float> &result);
+    int predict(const unsigned char *pixels, int pixelType, int width, int height,
+                FaceObject &faceobject,
+                std::vector<float> &result);
 
 private:
     ncnn::Net model;

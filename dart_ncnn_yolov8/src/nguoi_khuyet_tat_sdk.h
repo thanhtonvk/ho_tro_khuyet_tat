@@ -29,26 +29,39 @@ kannaRotate(const unsigned char *src, int channel, int srcw, int srch, unsigned 
             int dsw, int dsh, int type);
 
 FFI_PLUGIN_EXPORT void
-load(int deaf, int blind, char *object_detection_model, char *object_detection_param);
+load(int deaf, int blind, char *object_detection_model, char *object_detection_param,
+     char *face_detection_model, char *face_detection_param,
+     char *light_traffic_model, char *light_traffic_param,
+     char *emotion_model, char *emotion_param,
+     char *face_reg_model, char *face_reg_param,
+     char *face_deaf_model, char *face_deaf_param,
+     char *deaf_model, char *deaf_param,
+     char *money_model, char *model_param);
 
 FFI_PLUGIN_EXPORT void unLoad();
 
 FFI_PLUGIN_EXPORT char *getEmbeddingFromPath(const char *image_path);
 
 FFI_PLUGIN_EXPORT char *
-detectFaceObjectWithPixels(const unsigned char *pixels, int width, int height);
+detectFaceObjectWithPixels(const unsigned char *pixels, int pixelType, int width, int height);
 
-FFI_PLUGIN_EXPORT char *getEmbeddingWithPixels(const unsigned char *pixels, int width, int height);
+FFI_PLUGIN_EXPORT char *
+getEmbeddingWithPixels(const unsigned char *pixels, int pixelType, int width, int height);
 
-FFI_PLUGIN_EXPORT char *detectMoney(const unsigned char *pixels, int width, int height);
+FFI_PLUGIN_EXPORT char *
+detectMoney(const unsigned char *pixels, int pixelType, int width, int height);
 
-FFI_PLUGIN_EXPORT char *detectObject(const unsigned char *pixels, int pixelType, int width, int height);
+FFI_PLUGIN_EXPORT char *
+detectObject(const unsigned char *pixels, int pixelType, int width, int height);
 
-FFI_PLUGIN_EXPORT char *predictLightTraffic(const unsigned char *pixels, int width, int height);
+FFI_PLUGIN_EXPORT char *
+predictLightTraffic(const unsigned char *pixels, int pixelType, int width, int height);
 
-FFI_PLUGIN_EXPORT char *predictDeaf(const unsigned char *pixels, int width, int height);
+FFI_PLUGIN_EXPORT char *
+predictDeaf(const unsigned char *pixels, int pixelType, int width, int height);
 
-FFI_PLUGIN_EXPORT char *predictEmotion(const unsigned char *pixels, int width, int height);
+FFI_PLUGIN_EXPORT char *
+predictEmotion(const unsigned char *pixels, int pixelType, int width, int height);
 
 #ifdef __cplusplus
 }

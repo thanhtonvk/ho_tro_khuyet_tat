@@ -64,21 +64,102 @@ class NguoiKhuyetTatSdk {
       required bool isDeaf,
       required String objectModel,
       required String objectParam,
+      required String faceModel,
+      required String faceParam,
+      required String lightModel,
+      required String lightParam,
+      required String emotionModel,
+      required String emotionParam,
+      required String faceRegModel,
+      required String faceRegParam,
+      required String faceDeafModel,
+      required String faceDeafParam,
+      required String deafModel,
+      required String deafParam,
+      required String moneyModel,
+      required String moneyParam,
       bool autoDispose = true}) async {
     if (autoDispose) {
       unLoad();
     }
-    final tempObjectModel = (await _copy(objectModel)).toNativeUtf8();
-    final tempObjectParam = (await _copy(objectParam)).toNativeUtf8();
+    final results = await Future.wait([
+      _copy(objectModel),
+      _copy(objectParam),
+      _copy(faceModel),
+      _copy(faceParam),
+      _copy(lightModel),
+      _copy(lightParam),
+      _copy(emotionModel),
+      _copy(emotionParam),
+      _copy(faceRegModel),
+      _copy(faceRegParam),
+      _copy(faceDeafModel),
+      _copy(faceDeafParam),
+      _copy(deafModel),
+      _copy(deafParam),
+      _copy(moneyModel),
+      _copy(moneyParam),
+    ]);
+
+    final tempObjectModel = results[0].toNativeUtf8();
+    final tempObjectParam = results[1].toNativeUtf8();
+    final tempFaceModel = results[2].toNativeUtf8();
+    final tempFaceParam = results[3].toNativeUtf8();
+    final tempLightModel = results[4].toNativeUtf8();
+    final tempLightParam = results[5].toNativeUtf8();
+    final tempEmotionModel = results[6].toNativeUtf8();
+    final tempEmotionParam = results[7].toNativeUtf8();
+    final tempFaceRegModel = results[8].toNativeUtf8();
+    final tempFaceRegParam = results[9].toNativeUtf8();
+    final tempFaceDeafModel = results[10].toNativeUtf8();
+    final tempFaceDeafParam = results[11].toNativeUtf8();
+    final tempDeafModel = results[12].toNativeUtf8();
+    final tempDeafParam = results[13].toNativeUtf8();
+    final tempMoneyModel = results[14].toNativeUtf8();
+    final tempMoneyParam = results[15].toNativeUtf8();
+
     if (isBlind && !isDeaf) {
-      _bindings.load(0, 1, tempObjectModel as Pointer<Char>,
-          tempObjectParam as Pointer<Char>);
+      _bindings.load(
+        0,
+        1,
+        tempObjectModel as Pointer<Char>,
+        tempObjectParam as Pointer<Char>,
+        tempFaceModel as Pointer<Char>,
+        tempFaceParam as Pointer<Char>,
+        tempLightModel as Pointer<Char>,
+        tempLightParam as Pointer<Char>,
+        tempEmotionModel as Pointer<Char>,
+        tempEmotionParam as Pointer<Char>,
+        tempFaceRegModel as Pointer<Char>,
+        tempFaceRegParam as Pointer<Char>,
+        tempFaceDeafModel as Pointer<Char>,
+        tempFaceDeafParam as Pointer<Char>,
+        tempDeafModel as Pointer<Char>,
+        tempDeafParam as Pointer<Char>,
+        tempMoneyModel as Pointer<Char>,
+        tempMoneyParam as Pointer<Char>,
+      );
     } else if (!isBlind && isDeaf) {
-      _bindings.load(1, 0, tempObjectModel as Pointer<Char>,
-          tempObjectParam as Pointer<Char>);
-    } else if (isBlind && isDeaf) {
-      _bindings.load(1, 1, tempObjectModel as Pointer<Char>,
-          tempObjectParam as Pointer<Char>);
+      _bindings.load(
+        1,
+        0,
+        tempObjectModel as Pointer<Char>,
+        tempObjectParam as Pointer<Char>,
+        tempFaceModel as Pointer<Char>,
+        tempFaceParam as Pointer<Char>,
+        tempLightModel as Pointer<Char>,
+        tempLightParam as Pointer<Char>,
+        tempEmotionModel as Pointer<Char>,
+        tempEmotionParam as Pointer<Char>,
+        tempFaceRegModel as Pointer<Char>,
+        tempFaceRegParam as Pointer<Char>,
+        tempFaceDeafModel as Pointer<Char>,
+        tempFaceDeafParam as Pointer<Char>,
+        tempDeafModel as Pointer<Char>,
+        tempDeafParam as Pointer<Char>,
+        tempMoneyModel as Pointer<Char>,
+        tempMoneyParam as Pointer<Char>,
+      );
     }
   }
 
@@ -152,7 +233,7 @@ class NguoiKhuyetTatSdk {
     }
 
     return DetectResult(
-      result: predictDeaf(
+      result: detectDeaf(
         pixels: rotated.pixels ?? Uint8List(0),
         width: rotated.width,
         height: rotated.height,
@@ -161,15 +242,18 @@ class NguoiKhuyetTatSdk {
     );
   }
 
-  List<YoloResult> predictDeaf(
-      {required Uint8List pixels, required int width, required int height}) {
+  List<YoloResult> detectDeaf(
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
     final results = YoloResult.create(_bindings
-        .predictDeaf(pixelsNative, width, height)
+        .predictDeaf(pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString());
     calloc.free(pixelsNative);
@@ -177,14 +261,17 @@ class NguoiKhuyetTatSdk {
   }
 
   List<double> predictEmotion(
-      {required Uint8List pixels, required int width, required height}) {
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
     final results = _bindings
-        .predictEmotion(pixelsNative, width, height)
+        .predictEmotion(pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString();
     calloc.free(pixelsNative);
@@ -268,14 +355,17 @@ class NguoiKhuyetTatSdk {
   }
 
   List<double> predictLightTraffic(
-      {required Uint8List pixels, required int width, required height}) {
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
     final results = _bindings
-        .predictLightTraffic(pixelsNative, width, height)
+        .predictLightTraffic(pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString();
     calloc.free(pixelsNative);
@@ -375,46 +465,7 @@ class NguoiKhuyetTatSdk {
     calloc.free(pixelsNative);
     return results;
   }
-  DetectResult detectObjectBGRA8888({
-    required Uint8List pixels,
-    required int height,
-    @Deprecated("width is automatically calculated from the length of the pixels.")
-    int width = 0,
-    required KannaRotateDeviceOrientationType deviceOrientationType,
-    required int sensorOrientation,
-    void Function(ui.Image image)? onDecodeImage,
-  }) {
-    final width = pixels.length ~/ height ~/ 4;
 
-    final rotated = kannaRotate(
-      pixels: pixels,
-      pixelChannel: PixelChannel.c4,
-      width: width,
-      height: height,
-      deviceOrientationType: deviceOrientationType,
-      sensorOrientation: sensorOrientation,
-    );
-
-    if (onDecodeImage != null) {
-      ui.decodeImageFromPixels(
-        pixels,
-        width,
-        height,
-        ui.PixelFormat.bgra8888,
-        onDecodeImage,
-      );
-    }
-
-    return DetectResult(
-      result: detectObject(
-        pixels: rotated.pixels ?? Uint8List(0),
-        pixelFormat: PixelFormat.bgra,
-        width: rotated.width,
-        height: rotated.height,
-      ),
-      image: rotated,
-    );
-  }
   DetectResult detectObjectYUV420({
     required Uint8List y,
     required Uint8List u,
@@ -491,14 +542,17 @@ class NguoiKhuyetTatSdk {
   }
 
   List<YoloResult> detectMoney(
-      {required Uint8List pixels, required int width, required int height}) {
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
     final results = YoloResult.create(_bindings
-        .detectMoney(pixelsNative, width, height)
+        .detectMoney(pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString());
     calloc.free(pixelsNative);
@@ -581,14 +635,18 @@ class NguoiKhuyetTatSdk {
   }
 
   List<FaceResult> detectFace(
-      {required Uint8List pixels, required int width, required int height}) {
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required int height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
     final results = FaceResult.create(_bindings
-        .detectFaceObjectWithPixels(pixelsNative, width, height)
+        .detectFaceObjectWithPixels(
+            pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString());
     calloc.free(pixelsNative);
@@ -694,14 +752,17 @@ class NguoiKhuyetTatSdk {
   }
 
   List<double> getEmbeddingFromPixels(
-      {required Uint8List pixels, required int width, required height}) {
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required height}) {
     final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
 
     for (var i = 0; i < pixels.length; i++) {
       pixelsNative[i] = pixels[i];
     }
     final results = _bindings
-        .getEmbeddingWithPixels(pixelsNative, width, height)
+        .getEmbeddingWithPixels(pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString();
     calloc.free(pixelsNative);

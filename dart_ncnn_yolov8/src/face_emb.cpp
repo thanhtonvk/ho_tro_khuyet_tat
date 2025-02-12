@@ -9,7 +9,8 @@
 FaceEmb::FaceEmb() {
 }
 
-int FaceEmb::load() {
+int FaceEmb::load(const char *model_path,
+                  const char *param_path) {
 
     modelEmb.clear();
 
@@ -21,19 +22,19 @@ int FaceEmb::load() {
 
     modelEmb.opt.num_threads = ncnn::get_big_cpu_count();
 
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "assets/yolo/w600k_mbf.param");
-    sprintf(modelpath, "assets/yolo/w600k_mbf.bin");
+//    char parampath[256];
+//    char modelpath[256];
+//    sprintf(parampath, "assets/yolo/w600k_mbf.param");
+//    sprintf(modelpath, "assets/yolo/w600k_mbf.bin");
 
-    modelEmb.load_param(parampath);
-    modelEmb.load_model(modelpath);
+    modelEmb.load_param(param_path);
+    modelEmb.load_model(model_path);
 
     return 0;
 }
 
-cv::Mat computeAffineMatrix(const std::vector<cv::Point2f> &src_points,
-                            const std::vector<cv::Point2f> &dst_points) {
+cv::Mat computeAffineMatrix(const std::vector <cv::Point2f> &src_points,
+                            const std::vector <cv::Point2f> &dst_points) {
     CV_Assert(src_points.size() == 5 && dst_points.size() == 5);
 
     // Construct matrices A and B for solving the linear system
@@ -75,9 +76,9 @@ cv::Mat computeAffineMatrix(const std::vector<cv::Point2f> &src_points,
     return affine_transform;
 }
 
-cv::Mat align_face(const cv::Mat &image, const std::vector<cv::Point2f> &detected_landmarks) {
+cv::Mat align_face(const cv::Mat &image, const std::vector <cv::Point2f> &detected_landmarks) {
     // Reference points (5 points for left eye, right eye, nose, left mouth corner, right mouth corner)
-    std::vector<cv::Point2f> ref_points = {
+    std::vector <cv::Point2f> ref_points = {
             cv::Point2f(30.2946f, 51.6963f), // Left eye
             cv::Point2f(65.5318f, 51.5014f), // Right eye
             cv::Point2f(48.0252f, 71.7366f), // Nose
@@ -98,19 +99,20 @@ cv::Mat align_face(const cv::Mat &image, const std::vector<cv::Point2f> &detecte
     return aligned_image;
 }
 
-int FaceEmb::getEmbeding(cv::Mat src, cv::Point2f landmark[5], std::vector<float> &result,
-                         cv::Mat &faceAligned) {
+int FaceEmb::getEmbedding(const unsigned char *pixels, int pixelType, int width, int height,
+                          cv::Point2f landmark[5], std::vector<float> &result,
+                          cv::Mat &faceAligned) {
 
     // Tính embedding của ảnh gốc
-    std::vector<cv::Point2f> landmarks;
+    std::vector <cv::Point2f> landmarks;
     for (int i = 0; i < 5; i++) {
         cv::Point2f p1 = cv::Point(landmark[i].x, landmark[i].y);
         landmarks.push_back(p1);
     }
-
+    cv::Mat src(height, width, (channels == 3) ? CV_8UC3 : CV_8UC1, (void *) pixels)
     faceAligned = align_face(src, landmarks);
-    ncnn::Mat in_net = ncnn::Mat::from_pixels_resize(faceAligned.clone().data,
-                                                     ncnn::Mat::PIXEL_RGB, faceAligned.cols,
+    ncnn::Mat in_net = ncnn::Mat::from_pixels_resize(faceAligned.data,
+                                                     pixelType, faceAligned.cols,
                                                      faceAligned.rows,
                                                      112, 112);
 

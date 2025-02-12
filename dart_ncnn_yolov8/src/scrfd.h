@@ -17,14 +17,14 @@ struct FaceObject {
 
 class SCRFD {
 public:
-    int load();
+    int load(const char *model_path,
+             const char *param_path);
 
 
     int
-    detect(const cv::Mat &rgb, std::vector <FaceObject> &faceobjects, float prob_threshold = 0.5f,
+    detect(const unsigned char *pixels, int pixelType, std::vector <FaceObject> &faceobjects,
+           int width, int height, float prob_threshold = 0.5f,
            float nms_threshold = 0.45f);
-
-    int draw(cv::Mat &rgb, const std::vector <FaceObject> &faceobjects);
 
 private:
     ncnn::Net scrfd;

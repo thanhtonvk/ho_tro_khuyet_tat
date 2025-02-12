@@ -133,7 +133,16 @@ kannaRotate(const unsigned char *src, int channel, int srcw, int srch, unsigned 
 }
 
 FFI_PLUGIN_EXPORT void
-load(int deaf, int blind, char *object_detection_model, char *object_detection_param) {
+load(int deaf, int blind,
+     char *object_detection_model, char *object_detection_param,
+     char *face_detection_model, char *face_detection_param,
+     char *light_traffic_model, char *light_traffic_param,
+     char *emotion_model, char *emotion_param,
+     char *face_reg_model, char *face_reg_param,
+     char *face_deaf_model, char *face_deaf_param,
+     char *deaf_model, char *deaf_param,
+     char *money_model, char *money_param
+) {
     {
         ncnn::MutexLockGuard g(lock);
         delete objectDetection;
@@ -168,21 +177,22 @@ load(int deaf, int blind, char *object_detection_model, char *object_detection_p
         if (deaf > 0) {
             if (!faceDeafDetection)
                 faceDeafDetection = new SCRFD_DEAF();
-            faceDeafDetection->load();
+            faceDeafDetection->load(face_deaf_model, face_deaf_param);
 
             if (!emotionRecognition)
                 emotionRecognition = new EmotionRecognition();
-            emotionRecognition->load();
+            emotionRecognition->load(emotion_model, emotion_param);
 
             if (!deafDetection)
                 deafDetection = new DeafDetection();
-            deafDetection->load(320, norm_vals[0]);
+            deafDetection->load(320, norm_vals[0], deaf_model, deaf_param);
         } else {
 
-//            if (!lightTraffic) {
-//                lightTraffic = new LightTraffic();
-//            }
-//            lightTraffic->load();
+            if (!lightTraffic) {
+                lightTraffic = new LightTraffic();
+            }
+
+            lightTraffic->load(light_traffic_model, light_traffic_param);
 
             if (!objectDetection) {
                 objectDetection = new ObjectDetection();
@@ -190,16 +200,15 @@ load(int deaf, int blind, char *object_detection_model, char *object_detection_p
             objectDetection->load(640, mean_vals[0],
                                   norm_vals[0], object_detection_model, object_detection_param);
 
-//            if (!faceDetection)
-//                faceDetection = new SCRFD();
-//            faceDetection->load();
-//            if (!faceRecognition)
-//                faceRecognition = new FaceEmb();
-//            faceRecognition->load();
-//
-//
-//            moneyDetection = new MoneyDetection();
-//            moneyDetection->load(320, norm_vals[0]);
+            if (!faceDetection)
+                faceDetection = new SCRFD();
+            faceDetection->load(face_detection_model, face_detection_param);
+            if (!faceRecognition)
+                faceRecognition = new FaceEmb();
+            faceRecognition->load(face_reg_model, face_reg_param);
+            if (!moneyDetection)
+                moneyDetection = new MoneyDetection();
+            moneyDetection->load(320, norm_vals[0], money_model, money_param);
 
         }
     }
@@ -237,9 +246,12 @@ FFI_PLUGIN_EXPORT char *getEmbeddingFromPath(const char *image_path) {
         embedding.clear();
         cv::Mat rgb;
         cv::cvtColor(bgr, rgb, cv::COLOR_BGR2RGB);
-        faceDetection->detect(rgb, faceObjects);
+        int width = rgb.cols;
+        int height = rgb.rows;
+        faceDetection->detect(rgb.data, ncnn::Mat::PIXEL_RGB, faceObjects, width, height);
         if (!faceObjects.empty()) {
-            faceRecognition->getEmbeding(rgb, faceObjects[0].landmark, embedding, faceAligned);
+            faceRecognition->getEmbedding(rgb.data, ncnn::Mat::PIXEL_RGB, width, height,
+                                          faceObjects[0].landmark, embedding, faceAligned);
         }
     }
 
@@ -247,43 +259,44 @@ FFI_PLUGIN_EXPORT char *getEmbeddingFromPath(const char *image_path) {
 }
 
 FFI_PLUGIN_EXPORT char *
-detectFaceObjectWithPixels(const unsigned char *pixels, int width, int height) {
-    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+detectFaceObjectWithPixels(const unsigned char *pixels, int pixelType, int width, int height) {
+//    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
     ncnn::MutexLockGuard g(lock);
     if (faceDetection) {
         faceObjects.clear();
-        faceDetection->detect(rgb, faceObjects);
+        faceDetection->detect(pixels, pixelType, faceObjects, width, height);
     }
 
     return parseResultsFaceObjects(faceObjects);
 }
 
-FFI_PLUGIN_EXPORT char *getEmbeddingWithPixels(const unsigned char *pixels, int width, int height) {
-    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+FFI_PLUGIN_EXPORT char *
+getEmbeddingWithPixels(const unsigned char *pixels, int pixelType, int width, int height) {
+//    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
     ncnn::MutexLockGuard g(lock);
     if (faceRecognition) {
         if (!faceObjects.empty()) {
             embedding.clear();
-            faceRecognition->getEmbeding(rgb, faceObjects[0].landmark, embedding, faceAligned);
+            faceRecognition->getEmbedding(pixels, pixelType, faceObjects[0].landmark, embedding,
+                                          faceAligned);
         }
     }
 
     return parseVector(embedding);
 }
 
-FFI_PLUGIN_EXPORT char *detectMoney(const unsigned char *pixels, int width, int height) {
-    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+FFI_PLUGIN_EXPORT char *
+detectMoney(const unsigned char *pixels, int pixelType, int width, int height) {
     ncnn::MutexLockGuard g(lock);
     if (moneyDetection) {
         moneyObjects.clear();
-        moneyDetection->detect(rgb, moneyObjects);
+        moneyDetection->detect(pixels, pixelType, moneyObjects, width, height);
     }
     return parseResultsObjects(moneyObjects);
 }
 
 FFI_PLUGIN_EXPORT char *
 detectObject(const unsigned char *pixels, int pixelType, int width, int height) {
-//    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
     ncnn::MutexLockGuard g(lock);
     if (objectDetection) {
         objects.clear();
@@ -292,39 +305,43 @@ detectObject(const unsigned char *pixels, int pixelType, int width, int height) 
     return parseResultsObjects(objects);
 }
 
-FFI_PLUGIN_EXPORT char *predictLightTraffic(const unsigned char *pixels, int width, int height) {
-    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+FFI_PLUGIN_EXPORT char *
+predictLightTraffic(const unsigned char *pixels, int pixelType, int width, int height) {
+
     ncnn::MutexLockGuard g(lock);
     if (lightTraffic) {
         resultLightTraffic.clear();
+        cv::Mat rgb(height, width, (channels == 3) ? CV_8UC3 : CV_8UC1, (void *) pixels);
         for (Object obj: objects) {
             cv::Mat imageLightTraffic = rgb(obj.rect);
-            lightTraffic->predict(imageLightTraffic, resultLightTraffic);
+            lightTraffic->predict(imageLightTraffic.data, pixelType, imageLightTraffic.cols,
+                                  imageLightTraffic.rows, resultLightTraffic);
             break;
         }
     }
     return parseVector(resultLightTraffic);
 }
 
-FFI_PLUGIN_EXPORT char *predictDeaf(const unsigned char *pixels, int width, int height) {
-    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+FFI_PLUGIN_EXPORT char *
+predictDeaf(const unsigned char *pixels, int pixelType, int width, int height) {
     ncnn::MutexLockGuard g(lock);
     if (deafDetection) {
         deafObjects.clear();
-        deafDetection->detect(rgb, deafObjects);
+        deafDetection->detect(pixels, pixelType, deafObjects, width, height);
     }
-    return parseResultsObjects(objects);
+    return parseResultsObjects(deafObjects);
 }
 
-FFI_PLUGIN_EXPORT char *predictEmotion(const unsigned char *pixels, int width, int height) {
-    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+FFI_PLUGIN_EXPORT char *
+predictEmotion(const unsigned char *pixels, int pixelType, int width, int height) {
     ncnn::MutexLockGuard g(lock);
     if (faceDeafDetection && emotionRecognition) {
         faceObjects.clear();
         scoreEmotions.clear();
-        faceDeafDetection->detect(rgb, faceObjects);
+        faceDeafDetection->detect(pixels, pixelType, faceObjects, width, height);
         if (!faceObjects.empty()) {
-            emotionRecognition->predict(rgb, faceObjects[0], scoreEmotions);
+            emotionRecognition->predict(pixels, pixelType, width, height, faceObjects[0],
+                                        scoreEmotions);
         }
     }
     return parseVector(scoreEmotions);

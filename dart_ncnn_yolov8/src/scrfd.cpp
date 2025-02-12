@@ -211,7 +211,8 @@ static void generate_proposals(const ncnn::Mat& anchors, int feat_stride, const 
     }
 }
 
-int SCRFD::load()
+int SCRFD::load(const char *model_path,
+                const char *param_path)
 {
     scrfd.clear();
 
@@ -226,23 +227,21 @@ int SCRFD::load()
 
     scrfd.opt.num_threads = ncnn::get_big_cpu_count();
 
-    char parampath[256];
-    char modelpath[256];
-    sprintf(parampath, "assets/yolo/scrfd_2.5g_kps-opt2.param");
-    sprintf(modelpath, "assets/yolo/scrfd_2.5g_kps-opt2.bin");
+//    char parampath[256];
+//    char modelpath[256];
+//    sprintf(parampath, "assets/yolo/scrfd_2.5g_kps-opt2.param");
+//    sprintf(modelpath, "assets/yolo/scrfd_2.5g_kps-opt2.bin");
 
-    scrfd.load_param(parampath);
-    scrfd.load_model(modelpath);
+    scrfd.load_param(param_path);
+    scrfd.load_model(model_path);
 
     return 0;
 }
 
-int SCRFD::detect(const cv::Mat& rgb, std::vector<FaceObject>& faceobjects, float prob_threshold, float nms_threshold)
+int SCRFD::detect(const unsigned char *pixels, int pixelType, std::vector <FaceObject> &faceobjects,
+                  int width, int height, float prob_threshold,
+                  float nms_threshold)
 {
-    int width = rgb.cols;
-    int height = rgb.rows;
-
-    // insightface/detection/scrfd/configs/scrfd/scrfd_500m.py
     const int target_size = 640;
 
     // pad to multiple of 32
@@ -262,7 +261,7 @@ int SCRFD::detect(const cv::Mat& rgb, std::vector<FaceObject>& faceobjects, floa
         w = w * scale;
     }
 
-    ncnn::Mat in = ncnn::Mat::from_pixels_resize(rgb.data, ncnn::Mat::PIXEL_RGB, width, height, w, h);
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(pixels, pixelType, width, height, w, h);
 
     // pad to target_size rectangle
     int wpad = (w + 31) / 32 * 32 - w;
