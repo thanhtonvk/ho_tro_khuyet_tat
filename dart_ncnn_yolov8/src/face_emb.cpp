@@ -109,7 +109,7 @@ int FaceEmb::getEmbedding(const unsigned char *pixels, int pixelType, int width,
         cv::Point2f p1 = cv::Point(landmark[i].x, landmark[i].y);
         landmarks.push_back(p1);
     }
-    cv::Mat src(height, width, (channels == 3) ? CV_8UC3 : CV_8UC1, (void *) pixels)
+    cv::Mat src(height, width, CV_8UC3, (void *) pixels);
     faceAligned = align_face(src, landmarks);
     ncnn::Mat in_net = ncnn::Mat::from_pixels_resize(faceAligned.data,
                                                      pixelType, faceAligned.cols,

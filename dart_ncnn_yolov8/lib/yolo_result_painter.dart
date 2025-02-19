@@ -68,6 +68,7 @@ class YoloResultPainter extends CustomPainter {
             rect.top,
           ),
         );
+      break;
     }
   }
 

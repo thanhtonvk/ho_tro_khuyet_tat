@@ -199,26 +199,25 @@ generate_proposals(const ncnn::Mat &anchors, int feat_stride, const ncnn::Mat &s
 
 int SCRFD_DEAF::load(const char *model_path,
                      const char *param_path) {
-    scrfd.clear();
-
+    scrfd_deaf.clear();
     ncnn::set_cpu_powersave(2);
     ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
 
-    scrfd.opt = ncnn::Option();
+    scrfd_deaf.opt = ncnn::Option();
 
 #if NCNN_VULKAN
-    scrfd.opt.use_vulkan_compute = false;
+    scrfd_deaf.opt.use_vulkan_compute = false;
 #endif
 
-    scrfd.opt.num_threads = ncnn::get_big_cpu_count();
+    scrfd_deaf.opt.num_threads = ncnn::get_big_cpu_count();
 
 //    char parampath[256];
 //    char modelpath[256];
-//    sprintf(parampath, "assets/yolo/scrfd_2.5g_kps-opt2.param");
-//    sprintf(modelpath, "assets/yolo/scrfd_2.5g_kps-opt2.bin");
+//    sprintf(parampath, "assets/yolo/scrfd_deaf_2.5g_kps-opt2.param");
+//    sprintf(modelpath, "assets/yolo/scrfd_deaf_2.5g_kps-opt2.bin");
 
-    scrfd.load_param(param_path);
-    scrfd.load_model(model_path);
+    scrfd_deaf.load_param(param_path);
+    scrfd_deaf.load_model(model_path);
 
     return 0;
 }
@@ -258,7 +257,7 @@ SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
     const float norm_vals[3] = {1 / 128.f, 1 / 128.f, 1 / 128.f};
     in_pad.substract_mean_normalize(mean_vals, norm_vals);
 
-    ncnn::Extractor ex = scrfd.create_extractor();
+    ncnn::Extractor ex = scrfd_deaf.create_extractor();
 
     ex.input("input.1", in_pad);
 

@@ -49,7 +49,7 @@ cv::Mat convertToMat(const unsigned char *pixels, int width, int height, int cha
 
 char *parseResultsObjects(std::vector <Object> &objects) {
     if (objects.size() == 0) {
-        NCNN_LOGE("No object detected");
+
         return (char *) "";
     }
 
@@ -277,8 +277,8 @@ getEmbeddingWithPixels(const unsigned char *pixels, int pixelType, int width, in
     if (faceRecognition) {
         if (!faceObjects.empty()) {
             embedding.clear();
-            faceRecognition->getEmbedding(pixels, pixelType, faceObjects[0].landmark, embedding,
-                                          faceAligned);
+            faceRecognition->getEmbedding(pixels, pixelType, width, height,
+                                          faceObjects[0].landmark, embedding, faceAligned);
         }
     }
 
@@ -298,9 +298,13 @@ detectMoney(const unsigned char *pixels, int pixelType, int width, int height) {
 FFI_PLUGIN_EXPORT char *
 detectObject(const unsigned char *pixels, int pixelType, int width, int height) {
     ncnn::MutexLockGuard g(lock);
-    if (objectDetection) {
+    if (objectDetection && moneyDetection) {
         objects.clear();
-        objectDetection->detect(pixels, pixelType, objects, width, height);
+        moneyDetection->detect(pixels, pixelType, objects, width, height);
+        if (objects.empty()) {
+            objectDetection->detect(pixels, pixelType, objects, width, height);
+        }
+
     }
     return parseResultsObjects(objects);
 }
@@ -311,7 +315,7 @@ predictLightTraffic(const unsigned char *pixels, int pixelType, int width, int h
     ncnn::MutexLockGuard g(lock);
     if (lightTraffic) {
         resultLightTraffic.clear();
-        cv::Mat rgb(height, width, (channels == 3) ? CV_8UC3 : CV_8UC1, (void *) pixels);
+        cv::Mat rgb(height, width, CV_8UC3, (void *) pixels);;
         for (Object obj: objects) {
             cv::Mat imageLightTraffic = rgb(obj.rect);
             lightTraffic->predict(imageLightTraffic.data, pixelType, imageLightTraffic.cols,

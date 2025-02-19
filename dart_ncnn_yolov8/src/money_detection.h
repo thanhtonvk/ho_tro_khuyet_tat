@@ -14,7 +14,7 @@ public:
              const char *param_path);
 
     int detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects, int width,
-               int height, float prob_threshold = 0.5f, float nms_threshold = 0.2f);
+               int height, float prob_threshold = 0.8f, float nms_threshold = 0.4f);
 
 private:
 
