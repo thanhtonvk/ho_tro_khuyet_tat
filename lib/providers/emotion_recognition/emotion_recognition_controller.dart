@@ -24,7 +24,22 @@ class EmotionRecognitionController extends StateNotifier<List<double>> {
   );
 
   Future<void> initialize() async {
-    await nguoiKhuyetTatSDK.load(isBlind: false, isDeaf: true, objectModel: 'assets/yolo/yolov8n.bin', objectParam: 'assets/yolo/yolov8n.param');
+    await nguoiKhuyetTatSDK.load(isBlind: false, isDeaf: true, objectModel: 'assets/yolo/yolov8n.bin',
+        objectParam: 'assets/yolo/yolov8n.param',
+        faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+        faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+        lightModel: 'assets/yolo/lighttraffic.ncnn.bin',
+        lightParam: 'assets/yolo/lighttraffic.ncnn.param',
+        emotionModel: 'assets/yolo/model.bin',
+        emotionParam: 'assets/yolo/model.param',
+        faceRegModel: 'assets/yolo/w600k_mbf.bin',
+        faceRegParam: 'assets/yolo/w600k_mbf.param',
+        faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+        faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+        deafModel: 'assets/yolo/best_cu_chi_v9.bin',
+        deafParam: 'assets/yolo/best_cu_chi_v9.param',
+        moneyModel: 'assets/yolo/money_detection.bin',
+        moneyParam: 'assets/yolo/money_detection.param');
   }
 
   Future<void> predictEmotion(CameraImage cameraImage) async {

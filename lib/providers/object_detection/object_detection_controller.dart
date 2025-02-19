@@ -29,7 +29,21 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
         isBlind: true,
         isDeaf: false,
         objectModel: 'assets/yolo/yolov8n.bin',
-        objectParam: 'assets/yolo/yolov8n.param');
+        objectParam: 'assets/yolo/yolov8n.param',
+        faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+        faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+        lightModel: 'assets/yolo/lighttraffic.ncnn.bin',
+        lightParam: 'assets/yolo/lighttraffic.ncnn.param',
+        emotionModel: 'assets/yolo/model.bin',
+        emotionParam: 'assets/yolo/model.param',
+        faceRegModel: 'assets/yolo/w600k_mbf.bin',
+        faceRegParam: 'assets/yolo/w600k_mbf.param',
+        faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+        faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+        deafModel: 'assets/yolo/best_cu_chi_v9.bin',
+        deafParam: 'assets/yolo/best_cu_chi_v9.param',
+        moneyModel: 'assets/yolo/money_detection.bin',
+        moneyParam: 'assets/yolo/money_detection.param');
   }
 
   Future<void> detectMoney(CameraImage cameraImage) async {
@@ -56,6 +70,8 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
               },
             )
             .result;
+
+
         break;
       case ImageFormatGroup.nv21:
         break;
@@ -89,24 +105,28 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
               },
             )
             .result;
+        if (state.isNotEmpty) {
+          print(state.first.toString());
+        }
         break;
       case ImageFormatGroup.nv21:
         break;
       case ImageFormatGroup.bgra8888:
-        state = nguoiKhuyetTatSDK
-            .detectObjectBGRA8888(
-              pixels: cameraImage.planes[0].bytes,
-              height: cameraImage.height,
-              deviceOrientationType:
-                  ref.read(blindCameraController).deviceOrientationType,
-              sensorOrientation:
-                  ref.read(blindCameraController).sensorOrientation,
-              onDecodeImage: (image) {
-                ref.read(previewImage.notifier).state = image;
-                completer.complete();
-              },
-            )
-            .result;
+        break;
+      // state = nguoiKhuyetTatSDK
+      //     .detectObjectBGRA8888(
+      //       pixels: cameraImage.planes[0].bytes,
+      //       height: cameraImage.height,
+      //       deviceOrientationType:
+      //           ref.read(blindCameraController).deviceOrientationType,
+      //       sensorOrientation:
+      //           ref.read(blindCameraController).sensorOrientation,
+      //       onDecodeImage: (image) {
+      //         ref.read(previewImage.notifier).state = image;
+      //         completer.complete();
+      //       },
+      //     )
+      //     .result;
     }
     return completer.future;
   }

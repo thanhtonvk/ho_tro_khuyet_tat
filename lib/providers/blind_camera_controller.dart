@@ -2,6 +2,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
+import 'package:nguoi_khuyet_tat/providers/face_detection/face_detect_controller.dart';
+import 'package:nguoi_khuyet_tat/providers/face_recognition/face_recognition_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/object_detection/object_detection_controller.dart';
 
 final blindCameraController = Provider(
@@ -26,6 +28,8 @@ class BlindCameraController {
 
   Future<void> startImageStream() async {
     await ref.read(objectDetectController.notifier).initialize();
+    await ref.read(faceDetectController.notifier).initialize();
+    await ref.read(faceRecognitionController.notifier).initialize();
 
     final camera = (await availableCameras()).first;
 
@@ -44,6 +48,8 @@ class BlindCameraController {
 
         _isProcessing = true;
         await ref.read(objectDetectController.notifier).detectObject(image);
+
+        // await ref.read()
         _isProcessing = false;
       },
     );
