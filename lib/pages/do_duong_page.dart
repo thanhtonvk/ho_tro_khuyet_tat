@@ -14,7 +14,6 @@ class DoDuongPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final previewImage = ref.watch(ObjectDetectionController.previewImage);
-
     void showBackDialog() {
       showDialog<void>(
         context: context,
