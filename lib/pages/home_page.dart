@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nguoi_khuyet_tat/pages/drawer_list_feature.dart';
 
 import '../views/detect_view.dart';
 
@@ -20,6 +21,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
+      drawer: const DrawerListFeatureWidget(),
       body: switch (currentPageIndex) {
         0 => const DetectView(),
         int() => throw UnimplementedError(),
