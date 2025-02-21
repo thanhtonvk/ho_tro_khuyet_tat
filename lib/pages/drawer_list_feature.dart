@@ -95,7 +95,7 @@ class DrawerListFeatureWidget extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LearningScreen(),
+                            builder: (context) => LearningScreen(),
                           ));
                     },
                     title: "Học tập",
