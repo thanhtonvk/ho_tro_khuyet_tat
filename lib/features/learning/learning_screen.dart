@@ -6,7 +6,8 @@ import 'package:nguoi_khuyet_tat/utils/app_text_style.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 class LearningScreen extends StatefulWidget {
-  const LearningScreen({super.key});
+  const LearningScreen({super.key, required this.title});
+  final String title;
 
   @override
   _LearningScreenState createState() => _LearningScreenState();
@@ -18,13 +19,15 @@ class _LearningScreenState extends State<LearningScreen> {
   bool isRetried = false;
   bool isReading = false;
   bool isListening = false;
+  int countCorrectAnswer = 0;
+  final int MAX_QUESTIONS = 5;
   final flutterTts = FlutterTts();
   SpeechToText speechToText = SpeechToText();
 
   @override
   void initState() {
     super.initState();
-    _generateQuestionsAndSetState(10); // Generate questions and rebuild UI
+    _generateQuestionsAndSetState(MAX_QUESTIONS); // Generate questions and rebuild UI
     _initSpeechToText();
   }
 
@@ -36,6 +39,7 @@ class _LearningScreenState extends State<LearningScreen> {
   void dispose() {
     super.dispose();
     _stopReading();
+    _stopListening();
   }
 
   void _generateQuestionsAndSetState(int totalQuestions) {
@@ -51,8 +55,8 @@ class _LearningScreenState extends State<LearningScreen> {
     if (questions.isEmpty || !questions.containsKey(currentQuestionIndex)) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text(
-            "Học tập",
+          title: Text(
+            widget.title,
             style: AppTextStyle.appBarTitle,
           ),
         ),
@@ -272,7 +276,7 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Future<void> handleAnswer(String answer) async {
-    if (answer == questions[currentQuestionIndex]!['answer']) {
+    if (int.tryParse(answer) == questions[currentQuestionIndex]!['result']) {
       isRetried = false;
       if (isReading) {
         await _stopReading();
@@ -307,7 +311,7 @@ class _LearningScreenState extends State<LearningScreen> {
         _readQuestion();
       });
     } else {
-      //show dialog
+      showDialogResult();
     }
   }
 
@@ -354,7 +358,7 @@ class _LearningScreenState extends State<LearningScreen> {
           'C': options[2],
           'D': options[3],
         },
-        'result': result,
+        'result': num1 + num2,
         'answer': correctOption
       };
     }
@@ -372,6 +376,7 @@ class _LearningScreenState extends State<LearningScreen> {
     await flutterTts.setSpeechRate(0.35);
     await flutterTts.setVolume(1);
     await flutterTts.speak(text);
+    await flutterTts.awaitSpeakCompletion(true);
     isReading = true;
   }
 
@@ -382,13 +387,33 @@ class _LearningScreenState extends State<LearningScreen> {
 
   void _listenToSpeech() async {
     await speechToText.listen(onResult: (result) {
-      print('result speech: $result');
+      if (result.finalResult) {
+        if (int.tryParse(result.recognizedWords) != null) {
+          print('result speech: ${result.recognizedWords}');
+          handleAnswer(result.recognizedWords.trim());
+        }
+      }
     },
-    listenFor: Duration(seconds: 30)
+    listenFor: Duration(seconds: 30),
+    localeId: 'vi-VN',
     );
   }
 
   void _stopListening() async {
     await speechToText.stop();
+  }
+
+  void showDialogResult() async {
+    String text = 'Bạn đã hoànt hành bài học. Bạn đã trả lời đúng $countCorrectAnswer câu hỏi. Trả lời sai ${MAX_QUESTIONS - countCorrectAnswer} câu hỏi. Điểm ${countCorrectAnswer*2}';
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Hoàn thành bài kiểm tra'),
+        content: Text(
+          text,
+            ),
+      ),
+    );
+    await _readText(text);
   }
 }

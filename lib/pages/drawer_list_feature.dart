@@ -95,7 +95,7 @@ class DrawerListFeatureWidget extends StatelessWidget {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => LearningScreen(),
+                            builder: (context) => LearningScreen(title: "Học tập"),
                           ));
                     },
                     title: "Học tập",
@@ -107,7 +107,13 @@ class DrawerListFeatureWidget extends StatelessWidget {
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: DrawerItemButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LearningScreen(title: "Thi online"),
+                          ));
+                      },
                       title: "Thi online",
                       imagePath: "assets/images/ic_ranking.png",
                       icon: Icons.school,
