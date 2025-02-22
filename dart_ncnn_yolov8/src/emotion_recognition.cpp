@@ -56,7 +56,7 @@ int EmotionRecognition::predict(const unsigned char *pixels, int pixelType, int 
                                 std::vector<float> &result) {
 
     cv::Rect newRect = resizeImage(faceobject);
-    cv::Mat src(height, width, CV_8UC3, (void*)pixels);
+    cv::Mat src(height, width, CV_8UC3, (void *) pixels);
     if (newRect.x >= 0 && newRect.y >= 0 && newRect.width > 0 && newRect.height > 0 &&
         newRect.x + newRect.width <= src.cols && newRect.y + newRect.height <= src.rows) {
 

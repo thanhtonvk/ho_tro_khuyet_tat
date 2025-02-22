@@ -10,6 +10,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/widgets.dart';
 
 import '../blind_camera_controller.dart';
+
 final faceRecognitionController =
     StateNotifierProvider<FaceRecognitionController, List<double>>(
   FaceRecognitionController.new,
@@ -27,7 +28,10 @@ class FaceRecognitionController extends StateNotifier<List<double>> {
   );
 
   Future<void> initialize() async {
-    await nguoiKhuyetTatSDK.load(isBlind: true, isDeaf: false, objectModel: 'assets/yolo/yolov8n.bin',
+    await nguoiKhuyetTatSDK.load(
+        isBlind: true,
+        isDeaf: false,
+        objectModel: 'assets/yolo/yolov8n.bin',
         objectParam: 'assets/yolo/yolov8n.param',
         faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
         faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
@@ -45,7 +49,7 @@ class FaceRecognitionController extends StateNotifier<List<double>> {
         moneyParam: 'assets/yolo/money_detection.param');
   }
 
-  Future<void> getEmbeddingFromPath(XFile file) async {
+  Future<List<double>> getEmbeddingFromPath(XFile file) async {
     state = nguoiKhuyetTatSDK.getEmbeddingFromPath(file.path);
     log(state.toString());
 
@@ -55,6 +59,7 @@ class FaceRecognitionController extends StateNotifier<List<double>> {
       ).readAsBytesSync(),
     );
     ref.read(previewImage.notifier).state = decodedImage;
+    return state;
   }
 
   Future<void> getEmbeddingFromImage(CameraImage cameraImage) async {

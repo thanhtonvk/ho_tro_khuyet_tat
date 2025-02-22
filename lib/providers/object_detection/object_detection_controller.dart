@@ -22,7 +22,7 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
 
   final Ref ref;
   late FlutterTts flutterTts;
-  bool isSpeaking = false; // Kiểm soát trạng thái nói
+  bool isSpeaking = false;
   final nguoiKhuyetTatSDK = NguoiKhuyetTatSdk();
 
   static final previewImage = StateProvider<ui.Image?>(
@@ -99,11 +99,11 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
             .result;
 
         if (state.isNotEmpty) {
-          String content = '';
           YoloResult obj = state.first;
+          print('x ${obj.x} y ${obj.y} w ${obj.width} h ${obj.height}');
           String name = labels[state.first.label];
-          double width = cameraImage.width as double;
-          double height = cameraImage.height as double;
+          double width = cameraImage.height.toDouble();
+          double height = cameraImage.width.toDouble();
           int label = obj.label;
           if (obj.label < 80) {
             double focalLength = CalDistance.calculateFocalLength(
@@ -116,70 +116,9 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
                 Common.xywhToCenter(obj.x, obj.y, width, height);
             double centerX = position[0];
             double centerY = position[1];
-            String speaking = "";
-
-            if (100 < centerX &&
-                centerX < 200 &&
-                0 < centerY &&
-                centerY < 200) {
-              speaking = "$name đang ở trên";
-            }
-            // Right
-            if (200 < centerX &&
-                centerX < 320 &&
-                200 < centerY &&
-                centerY < 400) {
-              speaking = "$name đang ở bên phải";
-            }
-            // Bottom
-            if (100 < centerX &&
-                centerX < 200 &&
-                400 < centerY &&
-                centerY < 640) {
-              speaking = "$name đang ở dưới";
-            }
-            // Left
-            if (0 < centerX &&
-                centerX < 100 &&
-                200 < centerY &&
-                centerY < 400) {
-              speaking = "$name đang ở bên trái";
-            }
-            // Top right
-            if (200 < centerX &&
-                centerX < 320 &&
-                0 < centerY &&
-                centerY < 200) {
-              speaking = "$name đang ở trên bên phải";
-            }
-            // Bottom right
-            if (200 < centerX &&
-                centerX < 320 &&
-                400 < centerY &&
-                centerY < 640) {
-              speaking = "$name đang ở dưới bên phải";
-            }
-            // Bottom left
-            if (0 < centerX &&
-                centerX < 100 &&
-                400 < centerY &&
-                centerY < 640) {
-              speaking = "$name đang ở dưới bên trái";
-            }
-            // Top left
-            if (0 < centerX && centerX < 100 && 0 < centerY && centerY < 200) {
-              speaking = "$name đang ở trên bên trái";
-            }
-            // Center
-            if (100 < centerX &&
-                centerX < 200 &&
-                200 < centerY &&
-                centerY < 400) {
-              speaking = "$name đang ở giữa";
-            }
-            String valDistance = distance.toStringAsFixed(2);
-            speaking += " $valDistance met";
-            _speak(speaking);
+            String content =
+                _getContentSpeaking(name, centerX, centerY, distance);
+            _speak(content);
           } else {
             _speak(name); // Gọi đọc tên đối tượng
           }
@@ -191,5 +130,44 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
         break;
     }
     return completer.future;
+  }
+
+  String _getContentSpeaking(
+      String name, double centerX, double centerY, double distance) {
+    int imageWidth = 720;
+    int imageHeight = 1280;
+    int gridCols = 3;
+    int gridRows = 3;
+
+    int cellWidth = (imageWidth / gridCols).floor(); // 240
+    int cellHeight = (imageHeight / gridRows).floor(); // 426
+
+    // 🔹 Giới hạn centerX và centerY trong phạm vi ảnh
+    centerX = centerX.clamp(0, imageWidth - 1);
+    centerY = centerY.clamp(0, imageHeight - 1);
+
+    int col = (centerX / cellWidth).floor();
+    int row = (centerY / cellHeight).floor();
+
+    Map<String, String> directions = {
+      "0,0": "trên bên trái",
+      "0,1": "trên",
+      "0,2": "trên bên phải",
+      "1,0": "bên trái",
+      "1,1": "giữa",
+      "1,2": "bên phải",
+      "2,0": "dưới bên trái",
+      "2,1": "dưới",
+      "2,2": "dưới bên phải",
+      "3,0": "dưới bên trái",
+      "3,1": "dưới bên phải"
+    };
+
+    String positionKey = "$row,$col";
+    print(positionKey);
+    String position = directions[positionKey] ?? "ngoài vùng xác định";
+
+    String valDistance = distance.toStringAsFixed(2);
+    return "$name đang ở $position $valDistance met";
   }
 }

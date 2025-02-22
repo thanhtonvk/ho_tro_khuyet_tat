@@ -1,20 +1,19 @@
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:nguoi_khuyet_tat/providers/blind_camera_controller.dart';
-import 'package:nguoi_khuyet_tat/providers/object_detection/object_detection_controller.dart';
-import '../providers/ncnn_yolo_options.dart';
+import 'package:nguoi_khuyet_tat/pages/face_manager_page.dart';
+import 'package:nguoi_khuyet_tat/providers/face_camera_controller.dart';
+import 'package:nguoi_khuyet_tat/providers/face_detection/face_detect_controller.dart';
 
 // A screen that allows users to take a picture using a given camera.
-class CameraPage extends HookConsumerWidget {
-  const CameraPage({
+class FaceDetectPage extends HookConsumerWidget {
+  const FaceDetectPage({
     super.key,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final previewImage = ref.watch(ObjectDetectionController.previewImage);
-
+    final previewImage = ref.watch(FaceDetectController.previewImage);
     void showBackDialog() {
       showDialog<void>(
         context: context,
@@ -40,7 +39,7 @@ class CameraPage extends HookConsumerWidget {
                 ),
                 child: const Text('CÓ'),
                 onPressed: () {
-                  ref.read(blindCameraController).stopImageStream();
+                  ref.read(faceCameraController).stopImageStream();
                   Navigator.pop(context);
                   Navigator.pop(context);
                 },
@@ -60,12 +59,18 @@ class CameraPage extends HookConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.add),
             onPressed: () {
-              showBackDialog();
+              ref.read(faceCameraController).stopImageStream();
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const FaceManagerPage(),
+                ),
+              );
             },
           ),
-          backgroundColor: Colors.transparent,
           elevation: 0,
         ),
         body: Builder(
@@ -84,11 +89,9 @@ class CameraPage extends HookConsumerWidget {
                     width: previewImage.width.toDouble(),
                     height: previewImage.height.toDouble(),
                     child: CustomPaint(
-                      painter: YoloResultPainter(
-                        image: previewImage,
-                        results: ref.watch(objectDetectController),
-                        labels: labels,
-                      ),
+                      painter: FaceResultPainter(
+                          image: previewImage,
+                          results: ref.watch(faceDetectController)),
                     ),
                   ),
                 ),

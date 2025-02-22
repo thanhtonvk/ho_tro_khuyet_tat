@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+    <string>Chúng tôi cần quyền để sử dụng Text-to-Speech</string>
 </dict>
 </plist>

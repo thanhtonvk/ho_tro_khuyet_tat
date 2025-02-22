@@ -3,15 +3,14 @@
 #include <string.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
 #include "cpu.h"
 
-static inline float intersection_area(const FaceObject &a, const FaceObject &b) {
+static inline float intersection_area(const Object &a, const Object &b) {
     cv::Rect_<float> inter = a.rect & b.rect;
     return inter.area();
 }
 
-static void qsort_descent_inplace(std::vector <FaceObject> &faceobjects, int left, int right) {
+static void qsort_descent_inplace(std::vector <Object> &faceobjects, int left, int right) {
     int i = left;
     int j = right;
     float p = faceobjects[(left + right) / 2].prob;
@@ -45,14 +44,14 @@ static void qsort_descent_inplace(std::vector <FaceObject> &faceobjects, int lef
     }
 }
 
-static void qsort_descent_inplace(std::vector <FaceObject> &faceobjects) {
+static void qsort_descent_inplace(std::vector <Object> &faceobjects) {
     if (faceobjects.empty())
         return;
 
     qsort_descent_inplace(faceobjects, 0, faceobjects.size() - 1);
 }
 
-static void nms_sorted_bboxes(const std::vector <FaceObject> &faceobjects, std::vector<int> &picked,
+static void nms_sorted_bboxes(const std::vector <Object> &faceobjects, std::vector<int> &picked,
                               float nms_threshold) {
     picked.clear();
 
@@ -64,11 +63,11 @@ static void nms_sorted_bboxes(const std::vector <FaceObject> &faceobjects, std::
     }
 
     for (int i = 0; i < n; i++) {
-        const FaceObject &a = faceobjects[i];
+        const Object &a = faceobjects[i];
 
         int keep = 1;
         for (int j = 0; j < (int) picked.size(); j++) {
-            const FaceObject &b = faceobjects[picked[j]];
+            const Object &b = faceobjects[picked[j]];
 
             // intersection over union
             float inter_area = intersection_area(a, b);
@@ -121,7 +120,7 @@ static ncnn::Mat generate_anchors(int base_size, const ncnn::Mat &ratios, const 
 static void
 generate_proposals(const ncnn::Mat &anchors, int feat_stride, const ncnn::Mat &score_blob,
                    const ncnn::Mat &bbox_blob, const ncnn::Mat &kps_blob, float prob_threshold,
-                   std::vector <FaceObject> &faceobjects) {
+                   std::vector <Object> &faceobjects) {
     int w = score_blob.w;
     int h = score_blob.h;
 
@@ -164,28 +163,13 @@ generate_proposals(const ncnn::Mat &anchors, int feat_stride, const ncnn::Mat &s
                     float x1 = cx + dw;
                     float y1 = cy + dh;
 
-                    FaceObject obj;
+                    Object obj;
                     obj.rect.x = x0;
                     obj.rect.y = y0;
                     obj.rect.width = x1 - x0 + 1;
                     obj.rect.height = y1 - y0 + 1;
                     obj.prob = prob;
-
-                    if (!kps_blob.empty()) {
-                        const ncnn::Mat kps = kps_blob.channel_range(q * 10, 10);
-
-                        obj.landmark[0].x = cx + kps.channel(0)[index] * feat_stride;
-                        obj.landmark[0].y = cy + kps.channel(1)[index] * feat_stride;
-                        obj.landmark[1].x = cx + kps.channel(2)[index] * feat_stride;
-                        obj.landmark[1].y = cy + kps.channel(3)[index] * feat_stride;
-                        obj.landmark[2].x = cx + kps.channel(4)[index] * feat_stride;
-                        obj.landmark[2].y = cy + kps.channel(5)[index] * feat_stride;
-                        obj.landmark[3].x = cx + kps.channel(6)[index] * feat_stride;
-                        obj.landmark[3].y = cy + kps.channel(7)[index] * feat_stride;
-                        obj.landmark[4].x = cx + kps.channel(8)[index] * feat_stride;
-                        obj.landmark[4].y = cy + kps.channel(9)[index] * feat_stride;
-                    }
-
+                    obj.label = 20;
                     faceobjects.push_back(obj);
                 }
 
@@ -225,7 +209,7 @@ int SCRFD_DEAF::load(const char *model_path,
 
 int
 SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
-                   std::vector <FaceObject> &faceobjects,
+                   std::vector <Object> &faceobjects,
                    int width, int height, float prob_threshold,
                    float nms_threshold) {
     const int target_size = 640;
@@ -261,7 +245,7 @@ SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
 
     ex.input("input.1", in_pad);
 
-    std::vector <FaceObject> faceproposals;
+    std::vector <Object> faceproposals;
 
     // stride 8
     {
@@ -279,7 +263,7 @@ SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
         scales[1] = 2.f;
         ncnn::Mat anchors = generate_anchors(base_size, ratios, scales);
 
-        std::vector <FaceObject> faceobjects8;
+        std::vector <Object> faceobjects8;
         generate_proposals(anchors, feat_stride, score_blob, bbox_blob, kps_blob, prob_threshold,
                            faceobjects8);
 
@@ -302,7 +286,7 @@ SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
         scales[1] = 2.f;
         ncnn::Mat anchors = generate_anchors(base_size, ratios, scales);
 
-        std::vector <FaceObject> faceobjects16;
+        std::vector <Object> faceobjects16;
         generate_proposals(anchors, feat_stride, score_blob, bbox_blob, kps_blob, prob_threshold,
                            faceobjects16);
 
@@ -325,7 +309,7 @@ SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
         scales[1] = 2.f;
         ncnn::Mat anchors = generate_anchors(base_size, ratios, scales);
 
-        std::vector <FaceObject> faceobjects32;
+        std::vector <Object> faceobjects32;
         generate_proposals(anchors, feat_stride, score_blob, bbox_blob, kps_blob, prob_threshold,
                            faceobjects32);
 
@@ -344,7 +328,6 @@ SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
     faceobjects.resize(face_count);
     for (int i = 0; i < face_count; i++) {
         faceobjects[i] = faceproposals[picked[i]];
-
         // adjust offset to original unpadded
         float x0 = (faceobjects[i].rect.x - (wpad / 2)) / scale;
         float y0 = (faceobjects[i].rect.y - (hpad / 2)) / scale;
@@ -360,30 +343,7 @@ SCRFD_DEAF::detect(const unsigned char *pixels, int pixelType,
         faceobjects[i].rect.y = y0;
         faceobjects[i].rect.width = x1 - x0;
         faceobjects[i].rect.height = y1 - y0;
-
-
-        x0 = (faceobjects[i].landmark[0].x - (wpad / 2)) / scale;
-        y0 = (faceobjects[i].landmark[0].y - (hpad / 2)) / scale;
-        x1 = (faceobjects[i].landmark[1].x - (wpad / 2)) / scale;
-        y1 = (faceobjects[i].landmark[1].y - (hpad / 2)) / scale;
-        float x2 = (faceobjects[i].landmark[2].x - (wpad / 2)) / scale;
-        float y2 = (faceobjects[i].landmark[2].y - (hpad / 2)) / scale;
-        float x3 = (faceobjects[i].landmark[3].x - (wpad / 2)) / scale;
-        float y3 = (faceobjects[i].landmark[3].y - (hpad / 2)) / scale;
-        float x4 = (faceobjects[i].landmark[4].x - (wpad / 2)) / scale;
-        float y4 = (faceobjects[i].landmark[4].y - (hpad / 2)) / scale;
-
-        faceobjects[i].landmark[0].x = std::max(std::min(x0, (float) width - 1), 0.f);
-        faceobjects[i].landmark[0].y = std::max(std::min(y0, (float) height - 1), 0.f);
-        faceobjects[i].landmark[1].x = std::max(std::min(x1, (float) width - 1), 0.f);
-        faceobjects[i].landmark[1].y = std::max(std::min(y1, (float) height - 1), 0.f);
-        faceobjects[i].landmark[2].x = std::max(std::min(x2, (float) width - 1), 0.f);
-        faceobjects[i].landmark[2].y = std::max(std::min(y2, (float) height - 1), 0.f);
-        faceobjects[i].landmark[3].x = std::max(std::min(x3, (float) width - 1), 0.f);
-        faceobjects[i].landmark[3].y = std::max(std::min(y3, (float) height - 1), 0.f);
-        faceobjects[i].landmark[4].x = std::max(std::min(x4, (float) width - 1), 0.f);
-        faceobjects[i].landmark[4].y = std::max(std::min(y4, (float) height - 1), 0.f);
-
+        faceobjects[i].label = 20;
     }
 
     return 0;

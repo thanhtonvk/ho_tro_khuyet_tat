@@ -26,7 +26,7 @@ class FaceResult with _$FaceResult {
         y: double.parse(values[1]),
         width: double.parse(values[2]),
         height: double.parse(values[3]),
-        prob: double.parse(values[5]),
+        prob: double.parse(values[4]),
       );
     },
   ).toList();

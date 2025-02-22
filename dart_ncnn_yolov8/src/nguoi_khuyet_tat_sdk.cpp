@@ -41,6 +41,35 @@ static std::vector<float> resultLightTraffic;
 
 static std::vector<float> scoreEmotions;
 static std::vector<float> scoreDeafs;
+#include <sstream> // Để sử dụng std::ostringstream
+
+void logScores(const std::vector<float> &scores) {
+    std::ostringstream oss;
+    oss << "Scores: ";
+    for (size_t i = 0; i < scores.size(); ++i) {
+        oss << scores[i];
+        if (i < scores.size() - 1) {
+            oss << ", ";
+        }
+    }
+    NCNN_LOGE("%s", oss.str().c_str());
+}
+
+int getMaxIndex(const std::vector<float> &scores) {
+    if (scores.empty()) return -1;
+
+    int maxIndex = 0;
+    float maxValue = scores[0];
+
+    for (int i = 1; i < scores.size(); i++) {
+        if (scores[i] > maxValue) {
+            maxValue = scores[i];
+            maxIndex = i;
+        }
+    }
+
+    return maxIndex;
+}
 
 cv::Mat convertToMat(const unsigned char *pixels, int width, int height, int channels) {
     int type = (channels == 1) ? CV_8UC1 : CV_8UC3;
@@ -49,9 +78,10 @@ cv::Mat convertToMat(const unsigned char *pixels, int width, int height, int cha
 
 char *parseResultsObjects(std::vector <Object> &objects) {
     if (objects.size() == 0) {
-
+        NCNN_LOGE("No object detected");
         return (char *) "";
     }
+
 
     std::string result = "";
     for (int i = 0; i < (int) objects.size(); i++) {
@@ -175,9 +205,9 @@ load(int deaf, int blind,
                 };
 
         if (deaf > 0) {
-            if (!faceDeafDetection)
-                faceDeafDetection = new SCRFD_DEAF();
-            faceDeafDetection->load(face_deaf_model, face_deaf_param);
+            if (!faceDetection)
+                faceDetection = new SCRFD();
+            faceDetection->load(face_detection_model, face_detection_param);
 
             if (!emotionRecognition)
                 emotionRecognition = new EmotionRecognition();
@@ -265,6 +295,11 @@ detectFaceObjectWithPixels(const unsigned char *pixels, int pixelType, int width
     if (faceDetection) {
         faceObjects.clear();
         faceDetection->detect(pixels, pixelType, faceObjects, width, height);
+        if (!faceObjects.empty()) {
+            NCNN_LOGE("rect.x: %f", faceObjects[0].rect.x);
+            NCNN_LOGE("rect.y: %f", faceObjects[0].rect.y);
+        }
+
     }
 
     return parseResultsFaceObjects(faceObjects);
@@ -329,24 +364,34 @@ predictLightTraffic(const unsigned char *pixels, int pixelType, int width, int h
 FFI_PLUGIN_EXPORT char *
 predictDeaf(const unsigned char *pixels, int pixelType, int width, int height) {
     ncnn::MutexLockGuard g(lock);
-    if (deafDetection) {
+    if (deafDetection && faceDetection && emotionRecognition) {
         deafObjects.clear();
+        faceObjects.clear();
         deafDetection->detect(pixels, pixelType, deafObjects, width, height);
+        faceDetection->detect(pixels, pixelType, faceObjects, width, height);
+
+        if (!faceObjects.empty()) {
+            std::vector <Object> tempObjects;
+            tempObjects.resize(faceObjects.size() + deafObjects.size());
+            for (int i = 0; i < deafObjects.size(); ++i) {
+                tempObjects[i] = deafObjects[i];
+            }
+            for (int i = 0; i < faceObjects.size(); ++i) {
+                int indexObject = i + deafObjects.size();
+                FaceObject faceObject = faceObjects[i];
+                tempObjects[indexObject].rect = faceObject.rect;
+                scoreEmotions.clear();
+                emotionRecognition->predict(pixels, pixelType, width, height, faceObject,
+                                            scoreEmotions);
+                if (!scoreEmotions.empty()) {
+                    int idx = getMaxIndex(scoreEmotions);
+                    tempObjects[indexObject].prob = scoreEmotions[idx];
+                    tempObjects[indexObject].label = idx + 19;
+                }
+            }
+            deafObjects = tempObjects;
+        }
     }
     return parseResultsObjects(deafObjects);
 }
 
-FFI_PLUGIN_EXPORT char *
-predictEmotion(const unsigned char *pixels, int pixelType, int width, int height) {
-    ncnn::MutexLockGuard g(lock);
-    if (faceDeafDetection && emotionRecognition) {
-        faceObjects.clear();
-        scoreEmotions.clear();
-        faceDeafDetection->detect(pixels, pixelType, faceObjects, width, height);
-        if (!faceObjects.empty()) {
-            emotionRecognition->predict(pixels, pixelType, width, height, faceObjects[0],
-                                        scoreEmotions);
-        }
-    }
-    return parseVector(scoreEmotions);
-}

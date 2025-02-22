@@ -348,26 +348,4 @@ class NguoiKhuyetTatSDKBindings {
   late final _predictDeaf = _predictDeafPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
           ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
-
-  ffi.Pointer<ffi.Char> predictEmotion(
-    ffi.Pointer<ffi.UnsignedChar> pixels,
-    int pixelType,
-    int width,
-    int height,
-  ) {
-    return _predictEmotion(
-      pixels,
-      pixelType,
-      width,
-      height,
-    );
-  }
-
-  late final _predictEmotionPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
-              ffi.Int, ffi.Int)>>('predictEmotion');
-  late final _predictEmotion = _predictEmotionPtr.asFunction<
-      ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 }

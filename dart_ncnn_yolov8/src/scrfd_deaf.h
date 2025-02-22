@@ -8,7 +8,7 @@
 #include <opencv2/core/core.hpp>
 
 #include <net.h>
-#include "scrfd.h"
+#include "object_detection.h"
 
 class SCRFD_DEAF {
 public:
@@ -17,7 +17,7 @@ public:
 
 
     int
-    detect(const unsigned char *pixels, int pixelType, std::vector <FaceObject> &faceobjects,
+    detect(const unsigned char *pixels, int pixelType, std::vector <Object> &faceobjects,
            int width, int height, float prob_threshold = 0.5f,
            float nms_threshold = 0.45f);
 

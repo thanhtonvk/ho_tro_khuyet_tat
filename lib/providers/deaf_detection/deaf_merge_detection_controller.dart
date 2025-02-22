@@ -6,23 +6,24 @@ import 'package:camera/camera.dart';
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:nguoi_khuyet_tat/providers/giao_tiep_cau_camera_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/giao_tiep_tu_camera_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/ncnn_yolo_options.dart';
 import 'package:nguoi_khuyet_tat/utils/common.dart';
 
-final deafDetectionController =
-    StateNotifierProvider<DeafDetectionController, List<YoloResult>>(
-  DeafDetectionController.new,
+final deafMergeDetectionController =
+    StateNotifierProvider<DeafMergeDetectionController, List<YoloResult>>(
+  DeafMergeDetectionController.new,
 );
 
-class DeafDetectionController extends StateNotifier<List<YoloResult>> {
-  DeafDetectionController(this.ref) : super([]);
+class DeafMergeDetectionController extends StateNotifier<List<YoloResult>> {
+  DeafMergeDetectionController(this.ref) : super([]);
 
   final Ref ref;
   late FlutterTts flutterTts;
   bool isSpeaking = false;
   final nguoiKhuyetTatSDK = NguoiKhuyetTatSdk();
-
+  var cauList = [];
   static final previewImage = StateProvider<ui.Image?>(
     (_) => null,
   );
@@ -85,27 +86,45 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
               v: cameraImage.planes[2].bytes,
               height: cameraImage.height,
               deviceOrientationType:
-                  ref.read(giaoTiepTuCameraController).deviceOrientationType,
+                  ref.read(giaoTiepCauCameraController).deviceOrientationType,
               sensorOrientation:
-                  ref.read(giaoTiepTuCameraController).sensorOrientation,
+                  ref.read(giaoTiepCauCameraController).sensorOrientation,
               onDecodeImage: (image) {
                 ref.read(previewImage.notifier).state = image;
                 completer.complete();
               },
             )
             .result;
-        bool isExist = false;
+        Timer? resetTimer;
+
         for (YoloResult yoloResult in state) {
           if (yoloResult.label < 19) {
-            _speak(labelsDeaf[yoloResult.label]);
-            Common.noiDung.value = labelsDeaf[yoloResult.label];
-            isExist = true;
+            if (!cauList.contains(labelsDeaf[yoloResult.label])) {
+              Common.noiDung.value += " ${labelsDeaf[yoloResult.label]}";
+              cauList.add(labelsDeaf[yoloResult.label]);
+
+              // Reset timer mỗi khi có câu mới
+              resetTimer?.cancel();
+              resetTimer = Timer(const Duration(seconds: 10), () {
+                cauList.clear();
+                Common.noiDung.value = '';
+              });
+            }
             break;
           }
         }
-        if (!isExist) {
-          Common.noiDung.value = "";
+
+// Nếu đủ 3 câu, đọc nội dung, rồi reset sau 2 giây
+        if (cauList.length == 3) {
+          resetTimer?.cancel(); // Hủy timer 10s vì đã đọc được 3 câu
+          _speak(Common.noiDung.value).then((_) {
+            Future.delayed(const Duration(seconds: 2), () {
+              cauList.clear();
+              Common.noiDung.value = '';
+            });
+          });
         }
+
         break;
       case ImageFormatGroup.nv21:
         break;
