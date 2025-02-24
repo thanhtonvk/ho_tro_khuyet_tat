@@ -47,5 +47,8 @@
 	<true/>
 	<key>NSSpeechRecognitionUsageDescription</key>
     <string>Chúng tôi cần quyền để sử dụng Text-to-Speech</string>
+    <key>NSContactsUsageDescription</key>
+    <string>Ứng dụng cần quyền truy cập danh bạ để hiển thị thông tin liên hệ.</string>
+
 </dict>
 </plist>

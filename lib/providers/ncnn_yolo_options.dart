@@ -96,7 +96,7 @@ final labels = [
   'vợt tennis',
   'cái chai',
   'ly rượu',
-  'tách',
+  'cốc',
   'cái nĩa',
   'dao',
   'thìa',

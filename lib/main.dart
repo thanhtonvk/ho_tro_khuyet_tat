@@ -25,7 +25,7 @@ class MyApp extends HookConsumerWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(title: "NCNN Camera"),
+      home: HomePage(title: "Người khiếm thị"),
       navigatorObservers: [
         ref.watch(appLifecycleObserver),
       ],
