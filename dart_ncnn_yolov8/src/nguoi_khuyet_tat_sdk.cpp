@@ -395,3 +395,17 @@ predictDeaf(const unsigned char *pixels, int pixelType, int width, int height) {
     return parseResultsObjects(deafObjects);
 }
 
+FFI_PLUGIN_EXPORT char *
+lightDetection(const unsigned char *pixels, int pixelType, int width, int height){
+    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+
+    cv::Mat gray;
+    if (rgb.channels() == 3) {
+        cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY); // Chuyển sang ảnh xám
+    } else {
+        gray = rgb.clone(); // Nếu đã là ảnh xám, giữ nguyên
+    }
+
+    double meanBrightness = cv::mean(gray)[0]; // Lấy giá trị trung bình
+    return (meanBrightness >= 128) ? "bright" : "dark";
+}

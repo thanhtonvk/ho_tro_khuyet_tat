@@ -348,4 +348,26 @@ class NguoiKhuyetTatSDKBindings {
   late final _predictDeaf = _predictDeafPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
           ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
+
+  ffi.Pointer<ffi.Char> lightDetection(
+    ffi.Pointer<ffi.UnsignedChar> pixels,
+    int pixelType,
+    int width,
+    int height,
+  ) {
+    return _lightDetection(
+      pixels,
+      pixelType,
+      width,
+      height,
+    );
+  }
+
+  late final _lightDetectionPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+              ffi.Int, ffi.Int)>>('lightDetection');
+  late final _lightDetection = _lightDetectionPtr.asFunction<
+      ffi.Pointer<ffi.Char> Function(
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 }

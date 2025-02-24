@@ -60,6 +60,10 @@ predictLightTraffic(const unsigned char *pixels, int pixelType, int width, int h
 FFI_PLUGIN_EXPORT char *
 predictDeaf(const unsigned char *pixels, int pixelType, int width, int height);
 
+FFI_PLUGIN_EXPORT char *
+lightDetection(const unsigned char *pixels, int pixelType, int width, int height);
+
+
 #ifdef __cplusplus
 }
 #endif
