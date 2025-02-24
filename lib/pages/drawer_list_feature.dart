@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nguoi_khuyet_tat/features/dialog_micro/dialog_micro.dart';
 import 'package:nguoi_khuyet_tat/features/learning/learning_screen.dart';
 import 'package:nguoi_khuyet_tat/features/read_text/read_text_screen.dart';
 
@@ -37,7 +38,9 @@ class DrawerListFeatureWidget extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: DrawerItemButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    showDialog(context: context, builder: (context) => DialogMicro(isCallContact: false));
+                  },
                   title: "Quay số",
                   imagePath: "assets/images/ic_keyboard.png",
                   icon: Icons.keyboard,
@@ -48,7 +51,9 @@ class DrawerListFeatureWidget extends StatelessWidget {
                 child: Align(
                     alignment: Alignment.centerLeft,
                     child: DrawerItemButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        showDialog(context: context, builder: (context) => DialogMicro(isCallContact: true));
+                      },
                       title: "Gọi trong danh bạ",
                       imagePath: "assets/images/ic_contact.png",
                       icon: Icons.contact_emergency,

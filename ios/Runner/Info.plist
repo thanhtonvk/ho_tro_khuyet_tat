@@ -32,6 +32,14 @@
 	<string>App needs access to photo lib for profile images</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires access to the camera to scan text.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+  		<string>tel</string>
+	</array>
+	<key>NSContactsUsageDescription</key>
+	<string>App cần truy cập danh bạ để thực hiện cuộc gọi</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>App cần truy cập Bluetooth để thực hiện cuộc gọi</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
