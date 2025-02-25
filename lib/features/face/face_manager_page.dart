@@ -68,10 +68,14 @@ class _FaceManagerPageState extends ConsumerState<FaceManagerPage> {
           _faceViewModel.addFace(
             _nameController.text,
             imagePath,
-            value, // Dummy embedding
+            value,
           );
           _nameController.clear();
-          setState(() => _selectedImage = null);
+
+          setState(() {
+            _faceViewModel.loadFaces();
+            _selectedImage = null;
+          });
         } else {
           DialogHelper.showIOSDialog(
               context, "Thông báo", "Không nhận diện được khuôn mặt");
@@ -79,7 +83,6 @@ class _FaceManagerPageState extends ConsumerState<FaceManagerPage> {
       }).catchError((error) {
         DialogHelper.showIOSDialog(
             context, "Thông báo", "Không nhận diện được khuôn mặt");
-        print("Lỗi khi lấy embedding: $error");
       });
     }
   }
@@ -87,41 +90,71 @@ class _FaceManagerPageState extends ConsumerState<FaceManagerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Thêm người thân")),
-      body: Column(
-        children: [
-          _buildTextField(),
-          _buildImagePreview(),
-          _buildButtons(),
-          _buildFaceList(),
-        ],
+      appBar: AppBar(
+        title: const Text("Thêm người thân"),
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildTextField(),
+            const SizedBox(height: 10),
+            _buildImagePreview(),
+            const SizedBox(height: 20),
+            _buildButtons(),
+            const SizedBox(height: 20),
+            _buildFaceList(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildTextField() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextField(
-        controller: _nameController,
-        decoration: const InputDecoration(labelText: "Họ tên"),
+    return TextField(
+      controller: _nameController,
+      decoration: InputDecoration(
+        labelText: "Họ tên",
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }
 
   Widget _buildImagePreview() {
     return _selectedImage != null
-        ? Image.memory(_selectedImage!, width: 200, height: 200)
-        : const Icon(Icons.face, size: 200, color: Colors.grey);
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.memory(
+              _selectedImage!,
+              width: 200,
+              height: 200,
+              fit: BoxFit.cover,
+            ),
+          )
+        : const Icon(Icons.face, size: 100, color: Colors.grey);
   }
 
-
   Widget _buildButtons() {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        ElevatedButton(onPressed: _captureImage, child: const Text("CHỤP ẢNH")),
-        ElevatedButton(onPressed: _pickImage, child: const Text("MỞ THƯ VIỆN")),
-        ElevatedButton(onPressed: _addFace, child: const Text("THÊM")),
+        ElevatedButton(
+          onPressed: _captureImage,
+          child: const Text("Chụp ảnh"),
+        ),
+        ElevatedButton(
+          onPressed: _pickImage,
+          child: const Text("Mở thư viện"),
+        ),
+        ElevatedButton(
+          onPressed: _addFace,
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          child: const Text("Thêm"),
+        ),
       ],
     );
   }
@@ -133,16 +166,29 @@ class _FaceManagerPageState extends ConsumerState<FaceManagerPage> {
         itemBuilder: (context, index) {
           FaceData face = _faceViewModel.faces[index];
           return Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 3,
             child: ListTile(
-              leading:
-                  Image.file(File(face.cameraImage), width: 100, height: 100),
-              title: Text(face.name),
-              trailing: ElevatedButton(
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(50),
+                child: Image.file(
+                  File(face.cameraImage),
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              title: Text(face.name,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600)),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () async {
                   await _faceViewModel.removeFace(face.id!);
                   setState(() {});
                 },
-                child: const Text("Xoá"),
               ),
             ),
           );

@@ -49,6 +49,10 @@
     <string>Chúng tôi cần quyền để sử dụng Text-to-Speech</string>
     <key>NSContactsUsageDescription</key>
     <string>Ứng dụng cần quyền truy cập danh bạ để hiển thị thông tin liên hệ.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Ứng dụng cần quyền truy cập camera</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Ứng dụng cần quyền ghi âm</string>
 
 </dict>
 </plist>

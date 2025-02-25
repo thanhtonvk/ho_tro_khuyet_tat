@@ -2,17 +2,16 @@ import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:nguoi_khuyet_tat/pages/do_duong_page.dart';
 import 'package:nguoi_khuyet_tat/providers/blind_camera_controller.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-
 import '../features/dialog_micro/dialog_micro.dart';
+import '../features/face/face_detect_page.dart';
+import '../features/find_way/do_duong_page.dart';
 import '../features/learning/learning_screen.dart';
 import '../features/read_text/read_text_screen.dart';
 import '../providers/face_camera_controller.dart';
 import '../utils/app_text_style.dart';
 import 'drawer_list_feature.dart';
-import 'face_detect_page.dart';
 
 class HomePage extends HookConsumerWidget {
   HomePage({super.key, required this.title});
@@ -21,15 +20,16 @@ class HomePage extends HookConsumerWidget {
   late FlutterTts flutterTts;
   SpeechToText speechToText = SpeechToText();
   bool isListening = false;
+  String recognizedText = "";
 
   Future<void> _initSpeechToText() async {
     await speechToText.initialize();
   }
 
   Future<void> _setupTTS(String lang) async {
-    await flutterTts.setLanguage(lang); // Chọn tiếng Việt
-    await flutterTts.setSpeechRate(0.6); // Tốc độ nói
-    await flutterTts.setPitch(1.0); // Cao độ
+    await flutterTts.setLanguage(lang);
+    await flutterTts.setSpeechRate(0.6);
+    await flutterTts.setPitch(1.0);
   }
 
   Future<void> _speak(String text) async {
@@ -44,46 +44,116 @@ class HomePage extends HookConsumerWidget {
     flutterTts = FlutterTts();
     _setupTTS('vi-VN');
 
-    // Xử lý khi nói xong
-
     return Scaffold(
-        drawer: DrawerListFeatureWidget(),
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: const Text("Người khuyết tật"),
+      drawer: DrawerListFeatureWidget(),
+      appBar: AppBar(
+        backgroundColor: Colors.blueAccent,
+        title: const Text(
+          "Người khuyết tật",
+          style: TextStyle(color: Colors.white),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            // Căn giữa theo chiều dọc
-            crossAxisAlignment: CrossAxisAlignment.center,
-            // Căn giữa theo chiều ngang
-            children: [
-              const Padding(
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  "Hãy ra lệnh",
-                  style: AppTextStyle.appBarTitle,
-                  textAlign: TextAlign.center, // Đảm bảo text được căn giữa
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            // Hiển thị văn bản nhận diện
+            Container(
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blueAccent),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                recognizedText.isEmpty
+                    ? "Bạn hãy nói gì đó..."
+                    : recognizedText,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Danh sách câu lệnh gợi ý
+            const Text(
+              "Câu lệnh có thể sử dụng:",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            _buildCommandList(),
+            const Spacer(),
+            // Nút micro với hiệu ứng
+            GestureDetector(
+              onTap: () {
+                if (isListening) {
+                  _stopListening();
+                } else {
+                  _speak('Bạn hãy ra lệnh');
+                  flutterTts.setCompletionHandler(() async {
+                    _listenToSpeech(context, ref);
+                  });
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: isListening ? 90 : 80,
+                width: isListening ? 90 : 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isListening ? Colors.redAccent : Colors.blueAccent,
+                  boxShadow: [
+                    BoxShadow(
+                      color: isListening ? Colors.red : Colors.blue,
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.mic,
+                    size: 40,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-              IconButton(
-                onPressed: () {
-                  if (isListening) {
-                    _stopListening();
-                  } else {
-                    _speak('Bạn hãy ra lệnh');
-                    flutterTts.setCompletionHandler(() async {
-                      _listenToSpeech(context, ref);
-                    });
-                  }
-                },
-                icon: Image.asset('assets/images/ic_mic.png'),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommandList() {
+    final commands = [
+      {"text": "Dò đường", "icon": Icons.map},
+      {"text": "Nhận diện người thân", "icon": Icons.person},
+      {"text": "Gọi điện thoại", "icon": Icons.phone},
+      {"text": "Đọc chữ", "icon": Icons.menu_book},
+      {"text": "Học tập", "icon": Icons.school},
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        alignment: WrapAlignment.center,
+        children: commands
+            .map(
+              (cmd) => Chip(
+                label: Text(cmd["text"] as String),
+                avatar: Icon(cmd["icon"] as IconData),
+                backgroundColor: Colors.blueAccent.withOpacity(0.2),
               ),
-            ],
-          ),
-        ));
+            )
+            .toList(),
+      ),
+    );
   }
 
   void _listenToSpeech(BuildContext context, WidgetRef ref) async {
@@ -91,19 +161,17 @@ class HomePage extends HookConsumerWidget {
     await speechToText.listen(
       onResult: (result) {
         if (result.finalResult) {
-          String content = result.recognizedWords;
-          print('result speech: ${result.recognizedWords}');
-          content = removeDiacritics(content.trim().toLowerCase());
+          recognizedText = result.recognizedWords;
+          print('result speech: $recognizedText');
+          String content =
+              removeDiacritics(recognizedText.trim().toLowerCase());
+
           if (content.contains("do duong")) {
             _speak('Mở chức năng dò đường');
             flutterTts.setCompletionHandler(() async {
               ref.read(blindCameraController).startImageStream(0);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DoDuongPage(),
-                ),
-              );
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const DoDuongPage()));
             });
           } else if (content.contains("nguoi")) {
             _speak("Mở chức năng nhận diện người thân");
@@ -136,21 +204,7 @@ class HomePage extends HookConsumerWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ReadTextScreen(),
-                  ));
-            });
-          } else if (content.contains("dinh vi") ||
-              content.contains("vi tri")) {
-            _speak("Đã gửi vị trí");
-          } else if (content.contains("thi")) {
-            _speak("Mở chức năng thi online");
-            flutterTts.setCompletionHandler(() async {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const LearningScreen(title: "Thi online"),
-                  ));
+                      builder: (context) => const ReadTextScreen()));
             });
           } else if (content.contains("hoc")) {
             _speak("Mở chức năng học tập");
@@ -158,9 +212,8 @@ class HomePage extends HookConsumerWidget {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) =>
-                        const LearningScreen(title: "Học tập"),
-                  ));
+                      builder: (context) =>
+                          const LearningScreen(title: "Học tập")));
             });
           }
         }
@@ -173,45 +226,5 @@ class HomePage extends HookConsumerWidget {
   void _stopListening() async {
     isListening = false;
     await speechToText.stop();
-  }
-
-  Widget _buildButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 250,
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          color: Colors.blueAccent,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 6,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 30),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

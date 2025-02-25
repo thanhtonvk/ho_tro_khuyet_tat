@@ -80,6 +80,21 @@ class FaceDetectController extends StateNotifier<List<FaceResult>> {
         log('not support format');
         return;
       case ImageFormatGroup.yuv420:
+        String flash = nguoiKhuyetTatSDK.detectLightYUV420(
+          y: cameraImage.planes[0].bytes,
+          u: cameraImage.planes[1].bytes,
+          v: cameraImage.planes[2].bytes,
+          height: cameraImage.height,
+          deviceOrientationType:
+              ref.read(faceCameraController).deviceOrientationType,
+          sensorOrientation: ref.read(faceCameraController).sensorOrientation,
+        );
+        print(flash);
+        if (flash == 'bright') {
+          ref.read(faceCameraController).toggleFlash('bright');
+        } else {
+          ref.read(faceCameraController).toggleFlash('dark');
+        }
         state = nguoiKhuyetTatSDK
             .detectFaceYUV420(
               y: cameraImage.planes[0].bytes,

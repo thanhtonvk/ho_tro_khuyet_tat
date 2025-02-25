@@ -41,6 +41,7 @@ static std::vector<float> resultLightTraffic;
 
 static std::vector<float> scoreEmotions;
 static std::vector<float> scoreDeafs;
+
 #include <sstream> // Để sử dụng std::ostringstream
 
 void logScores(const std::vector<float> &scores) {
@@ -396,16 +397,26 @@ predictDeaf(const unsigned char *pixels, int pixelType, int width, int height) {
 }
 
 FFI_PLUGIN_EXPORT char *
-lightDetection(const unsigned char *pixels, int pixelType, int width, int height){
-    cv::Mat rgb = cv::Mat(height, width, CV_8UC1, *pixels);
+lightDetection(const unsigned char *pixels, int pixelType, int width, int height) {
+    if (!pixels) return strdup("error");
+
+    // Xác định số kênh dựa vào pixelType
+    int channels = (pixelType == CV_8UC3) ? 3 : 1;
+
+    // Tạo ma trận ảnh
+    cv::Mat rgb(height, width, CV_8UC(channels), (void *) pixels);
 
     cv::Mat gray;
-    if (rgb.channels() == 3) {
-        cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY); // Chuyển sang ảnh xám
+    if (channels == 3) {
+        cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY); // Chuyển RGB -> Grayscale
     } else {
-        gray = rgb.clone(); // Nếu đã là ảnh xám, giữ nguyên
+        gray = rgb; // Giữ nguyên nếu là ảnh xám
     }
 
-    double meanBrightness = cv::mean(gray)[0]; // Lấy giá trị trung bình
-    return (meanBrightness >= 128) ? "bright" : "dark";
+    // Tính độ sáng trung bình
+    double meanBrightness = cv::mean(gray)[0];
+    NCNN_LOGE("%f", meanBrightness);
+
+    // Trả về chuỗi động
+    return strdup((meanBrightness >= 80) ? "bright" : "dark");
 }

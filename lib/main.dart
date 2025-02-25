@@ -20,7 +20,8 @@ class MyApp extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: "NCNN Camera",
+      debugShowCheckedModeBanner: false,
+      title: "Phần mềm hỗ trợ khuyết tật",
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

@@ -4,41 +4,41 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:nguoi_khuyet_tat/providers/deaf_detection/deaf_detection_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/deaf_detection/deaf_merge_detection_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/giao_tiep_cau_camera_controller.dart';
-import 'package:nguoi_khuyet_tat/providers/giao_tiep_tu_camera_controller.dart';
-import '../providers/ncnn_yolo_options.dart';
-import '../utils/common.dart';
 
-// A screen that allows users to take a picture using a given camera.
+import '../../providers/ncnn_yolo_options.dart';
+import '../../utils/common.dart';
+
 class GiaoTiepCauPage extends HookConsumerWidget {
-  const GiaoTiepCauPage({
-    super.key,
-  });
+  const GiaoTiepCauPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final previewImage = ref.watch(DeafMergeDetectionController.previewImage);
+
     void showBackDialog() {
       showDialog<void>(
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Thoát'),
-            content: const Text(
-              'Bạn có muốn rời đi không？',
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
             ),
+            title: const Text('Thoát', style: TextStyle(fontWeight: FontWeight.bold)),
+            content: const Text('Bạn có muốn rời đi không？'),
+            actionsAlignment: MainAxisAlignment.spaceBetween,
             actions: <Widget>[
               TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
+                style: TextButton.styleFrom(foregroundColor: Colors.blue),
                 child: const Text('KHÔNG'),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
               ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: const Text('CÓ'),
                 onPressed: () {
@@ -61,21 +61,31 @@ class GiaoTiepCauPage extends HookConsumerWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              showBackDialog();
-            },
-          ),
           backgroundColor: Colors.transparent,
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: showBackDialog,
+          ),
+          title: const Text(
+            "Giao Tiếp Câu",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blueAccent, Colors.purpleAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
         ),
         body: Builder(
           builder: (_) {
             if (previewImage == null) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             return Stack(
@@ -99,39 +109,46 @@ class GiaoTiepCauPage extends HookConsumerWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: 20, // Cách đáy màn hình 20 pixel
-                  left: 0,
-                  right: 0,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: ValueListenableBuilder<String>(
-                      valueListenable: Common.noiDung,
-                      builder: (context, value, child) {
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20),
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: Common.noiDung,
+                    builder: (context, value, child) {
+                      return AnimatedOpacity(
+                        duration: const Duration(milliseconds: 300),
+                        opacity: value.isNotEmpty ? 1.0 : 0.0,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.white.withOpacity(0.85),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
                           child: Text(
                             value,
+                            textAlign: TextAlign.center,
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: Colors.black87,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
             );
           },
         ),
-        resizeToAvoidBottomInset: true,
         extendBodyBehindAppBar: true,
       ),
     );

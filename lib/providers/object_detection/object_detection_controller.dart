@@ -97,10 +97,24 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
               },
             )
             .result;
+        String flash = nguoiKhuyetTatSDK.detectLightYUV420(
+          y: cameraImage.planes[0].bytes,
+          u: cameraImage.planes[1].bytes,
+          v: cameraImage.planes[2].bytes,
+          height: cameraImage.height,
+          deviceOrientationType:
+              ref.read(blindCameraController).deviceOrientationType,
+          sensorOrientation: ref.read(blindCameraController).sensorOrientation,
+        );
+        print(flash);
+        if (flash == 'bright') {
+          ref.read(blindCameraController).toggleFlash('bright');
+        } else {
+          ref.read(blindCameraController).toggleFlash('dark');
+        }
 
         if (state.isNotEmpty) {
           YoloResult obj = state.first;
-          print('x ${obj.x} y ${obj.y} w ${obj.width} h ${obj.height}');
           String name = labels[state.first.label];
           double width = cameraImage.height.toDouble();
           double height = cameraImage.width.toDouble();

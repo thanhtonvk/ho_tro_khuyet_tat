@@ -58,23 +58,28 @@ class _ReadTextScreenState extends State<ReadTextScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Đọc chữ",
-            style: AppTextStyle.appBarTitle,
+      appBar: AppBar(
+        title: const Text("Đọc chữ", style: AppTextStyle.appBarTitle),
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade100, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          child: FutureBuilder(
-              future: _future,
-              builder: (context, snapshot) {
-                return isPermissionGranted
-                    ? _buildCameraPreview()
-                    : _buildPermissionDenied();
-              }),
-        ));
+        child: FutureBuilder(
+          future: _future,
+          builder: (context, snapshot) {
+            return isPermissionGranted
+                ? _buildCameraPreview()
+                : _buildPermissionDenied();
+          },
+        ),
+      ),
+    );
   }
 
   Widget _buildCameraPreview() {
@@ -90,29 +95,53 @@ class _ReadTextScreenState extends State<ReadTextScreen> {
                 onTap: () {
                   _scanImage();
                 },
-                child: FittedBox(
-                    fit: BoxFit.cover,
-                    child: SizedBox(
-                        width: _cameraController!.value.previewSize!.height,
-                        height: _cameraController!.value.previewSize!.width,
-                        child: CameraPreview(_cameraController!))),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: CameraPreview(_cameraController!),
+                  ),
+                ),
               ),
             ),
-            ElevatedButton(
-              child: const Text("Đổi camera"),
-              onPressed: () {
-                _toggleCamera();
-              },
+            SizedBox(
+              height: 20,
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                    vertical: 16, horizontal: 24), // Tăng kích thước vùng nhấn
+                minimumSize: const Size(100, 60), // Đặt kích thước tối thiểu
+                textStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold), // Tăng kích thước chữ
+              ),
+              icon: const Icon(Icons.cameraswitch, size: 28),
+              // Tăng kích thước icon
+              label: const Text("Đổi camera"),
+              onPressed: _toggleCamera,
             )
           ]);
         }
-        return Center(child: const Text("No camera available"));
+        return const Center(child: Text("No camera available"));
       },
     );
   }
 
   Widget _buildPermissionDenied() {
-    return Center(child: const Text("Permission denied"));
+    return const Center(child: Text("Permission denied"));
   }
 
   Future<void> _requestCameraPermission() async {
@@ -258,9 +287,7 @@ class _ReadTextScreenState extends State<ReadTextScreen> {
     await flutterTts.setSpeechRate(0.5);
     await flutterTts.setVolume(1);
     await flutterTts.speak(text);
-    if (Platform.isIOS) {
-
-    }
+    if (Platform.isIOS) {}
     isReading = true;
   }
 

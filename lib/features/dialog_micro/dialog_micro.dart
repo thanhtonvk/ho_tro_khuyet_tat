@@ -34,29 +34,44 @@ class _DialogMicroState extends State<DialogMicro> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      child: Container(
-        height: 300,
-        width: double.infinity,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-             Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(
-                  child: Text(
-                    widget.isCallContact ? 'Hãy đọc tên người bạn muốn gọi:' : 'Hãy đọc số điện thoại bạn muốn gọi:',
-                    style: AppTextStyle.appBarTitle,
-                  ),
-                )),
-            SizedBox(height: 20),
-            IconButton(
-              onPressed: () {
+            Text(
+              widget.isCallContact
+                  ? 'Hãy đọc tên người bạn muốn gọi:'
+                  : 'Hãy đọc số điện thoại bạn muốn gọi:',
+              style: AppTextStyle.appBarTitle,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () {
                 if (isListening) {
                   _stopListening();
                 } else {
                   _listenToSpeech();
                 }
               },
-              icon: Image.asset('assets/images/ic_mic.png'),
+              child: CircleAvatar(
+                radius: 40,
+                backgroundColor: isListening ? Colors.redAccent : Colors.blueAccent,
+                child: isListening
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Icon(Icons.mic, color: Colors.white, size: 40),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey[300],
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Đóng', style: TextStyle(color: Colors.black)),
             ),
           ],
         ),
@@ -65,7 +80,7 @@ class _DialogMicroState extends State<DialogMicro> {
   }
 
   void _listenToSpeech() async {
-    isListening = true;
+    setState(() => isListening = true);
     await speechToText.listen(
       onResult: (result) {
         if (result.finalResult) {
@@ -75,15 +90,16 @@ class _DialogMicroState extends State<DialogMicro> {
           } else {
             makePhoneCallFromContact(result.recognizedWords);
           }
+          _stopListening();
         }
       },
-      listenFor: Duration(seconds: 30),
+      listenFor: const Duration(seconds: 30),
       localeId: 'vi-VN',
     );
   }
 
   void _stopListening() async {
-    isListening = false;
+    setState(() => isListening = false);
     await speechToText.stop();
   }
 
@@ -98,7 +114,6 @@ class _DialogMicroState extends State<DialogMicro> {
 
   Future<void> makePhoneCallFromContact(String name) async {
     String normalizedName = removeDiacritics(name.trim().toLowerCase());
-
     if (contacts.isNotEmpty) {
       for (var contact in contacts) {
         String normalizedContactName = removeDiacritics(contact.displayName!.toLowerCase());
@@ -111,13 +126,10 @@ class _DialogMicroState extends State<DialogMicro> {
   }
 
   Future<void> _fetchContacts() async {
-    // Xin quyền truy cập danh bạ
     if (await Permission.contacts.request().isGranted) {
-      Iterable<Contact> contactList =
-          await ContactsService.getContacts(withThumbnails: false);
+      Iterable<Contact> contactList = await ContactsService.getContacts(withThumbnails: false);
       setState(() {
         contacts = contactList.toList();
-        print(contacts);
       });
     } else {
       print('Không có quyền truy cập danh bạ');
