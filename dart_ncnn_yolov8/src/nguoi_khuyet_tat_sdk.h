@@ -36,7 +36,7 @@ load(int deaf, int blind, char *object_detection_model, char *object_detection_p
      char *face_reg_model, char *face_reg_param,
      char *face_deaf_model, char *face_deaf_param,
      char *deaf_model, char *deaf_param,
-     char *money_model, char *model_param);
+     char *money_model, char *model_param, char *door_model, char *door_param);
 
 FFI_PLUGIN_EXPORT void unLoad();
 

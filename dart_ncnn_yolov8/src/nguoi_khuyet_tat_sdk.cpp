@@ -9,6 +9,7 @@
 #include "object_detection.h"
 #include "scrfd.h"
 #include "scrfd_deaf.h"
+#include "door_detection.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -26,6 +27,7 @@ static FaceEmb *faceRecognition = 0;
 static SCRFD_DEAF *faceDeafDetection = 0;
 static DeafDetection *deafDetection = 0;
 static MoneyDetection *moneyDetection = 0;
+static DoorDetection *doorDetection = 0;
 static ncnn::Mutex lock;
 
 
@@ -172,7 +174,8 @@ load(int deaf, int blind,
      char *face_reg_model, char *face_reg_param,
      char *face_deaf_model, char *face_deaf_param,
      char *deaf_model, char *deaf_param,
-     char *money_model, char *money_param
+     char *money_model, char *money_param,
+     char *door_model, char *door_param
 ) {
     {
         ncnn::MutexLockGuard g(lock);
@@ -184,6 +187,7 @@ load(int deaf, int blind,
         delete faceDeafDetection;
         delete deafDetection;
         delete moneyDetection;
+        delete doorDetection;
         objectDetection = 0;
         faceDetection = 0;
         lightTraffic = 0;
@@ -192,6 +196,7 @@ load(int deaf, int blind,
         faceDeafDetection = 0;
         deafDetection = 0;
         moneyDetection = 0;
+        doorDetection = 0;
 
         const float mean_vals[][3] =
                 {
@@ -219,11 +224,11 @@ load(int deaf, int blind,
             deafDetection->load(320, norm_vals[0], deaf_model, deaf_param);
         } else {
 
-            if (!lightTraffic) {
-                lightTraffic = new LightTraffic();
-            }
-
-            lightTraffic->load(light_traffic_model, light_traffic_param);
+//            if (!lightTraffic) {
+//                lightTraffic = new LightTraffic();
+//            }
+//
+//            lightTraffic->load(light_traffic_model, light_traffic_param);
 
             if (!objectDetection) {
                 objectDetection = new ObjectDetection();
@@ -240,6 +245,9 @@ load(int deaf, int blind,
             if (!moneyDetection)
                 moneyDetection = new MoneyDetection();
             moneyDetection->load(320, norm_vals[0], money_model, money_param);
+            if (!doorDetection)
+                doorDetection = new DoorDetection();
+            doorDetection->load(640, norm_vals[0], door_model, door_param);
 
         }
     }
@@ -257,6 +265,7 @@ FFI_PLUGIN_EXPORT void unLoad() {
         delete faceDeafDetection;
         delete deafDetection;
         delete moneyDetection;
+        delete doorDetection;
         objectDetection = 0;
         faceDetection = 0;
         lightTraffic = 0;
@@ -265,6 +274,7 @@ FFI_PLUGIN_EXPORT void unLoad() {
         faceDeafDetection = 0;
         deafDetection = 0;
         moneyDetection = 0;
+        doorDetection = 0;
     }
 }
 
@@ -338,9 +348,11 @@ detectObject(const unsigned char *pixels, int pixelType, int width, int height) 
         objects.clear();
         moneyDetection->detect(pixels, pixelType, objects, width, height);
         if (objects.empty()) {
-            objectDetection->detect(pixels, pixelType, objects, width, height);
+            doorDetection->detect(pixels, pixelType, objects, width, height);
+            if (objects.empty()) {
+                objectDetection->detect(pixels, pixelType, objects, width, height);
+            }
         }
-
     }
     return parseResultsObjects(objects);
 }

@@ -78,6 +78,8 @@ class NguoiKhuyetTatSdk {
       required String deafParam,
       required String moneyModel,
       required String moneyParam,
+      required String doorModel,
+      required String doorParam,
       bool autoDispose = true}) async {
     if (autoDispose) {
       unLoad();
@@ -99,6 +101,8 @@ class NguoiKhuyetTatSdk {
       _copy(deafParam),
       _copy(moneyModel),
       _copy(moneyParam),
+      _copy(doorModel),
+      _copy(doorParam)
     ]);
 
     final tempObjectModel = results[0].toNativeUtf8();
@@ -117,49 +121,53 @@ class NguoiKhuyetTatSdk {
     final tempDeafParam = results[13].toNativeUtf8();
     final tempMoneyModel = results[14].toNativeUtf8();
     final tempMoneyParam = results[15].toNativeUtf8();
+    final tempDoorModel = results[16].toNativeUtf8();
+    final tempDoorParam = results[17].toNativeUtf8();
 
     if (isBlind && !isDeaf) {
       _bindings.load(
-        0,
-        1,
-        tempObjectModel as Pointer<Char>,
-        tempObjectParam as Pointer<Char>,
-        tempFaceModel as Pointer<Char>,
-        tempFaceParam as Pointer<Char>,
-        tempLightModel as Pointer<Char>,
-        tempLightParam as Pointer<Char>,
-        tempEmotionModel as Pointer<Char>,
-        tempEmotionParam as Pointer<Char>,
-        tempFaceRegModel as Pointer<Char>,
-        tempFaceRegParam as Pointer<Char>,
-        tempFaceDeafModel as Pointer<Char>,
-        tempFaceDeafParam as Pointer<Char>,
-        tempDeafModel as Pointer<Char>,
-        tempDeafParam as Pointer<Char>,
-        tempMoneyModel as Pointer<Char>,
-        tempMoneyParam as Pointer<Char>,
-      );
+          0,
+          1,
+          tempObjectModel as Pointer<Char>,
+          tempObjectParam as Pointer<Char>,
+          tempFaceModel as Pointer<Char>,
+          tempFaceParam as Pointer<Char>,
+          tempLightModel as Pointer<Char>,
+          tempLightParam as Pointer<Char>,
+          tempEmotionModel as Pointer<Char>,
+          tempEmotionParam as Pointer<Char>,
+          tempFaceRegModel as Pointer<Char>,
+          tempFaceRegParam as Pointer<Char>,
+          tempFaceDeafModel as Pointer<Char>,
+          tempFaceDeafParam as Pointer<Char>,
+          tempDeafModel as Pointer<Char>,
+          tempDeafParam as Pointer<Char>,
+          tempMoneyModel as Pointer<Char>,
+          tempMoneyParam as Pointer<Char>,
+          tempDoorModel as Pointer<Char>,
+          tempDoorParam as Pointer<Char>);
     } else if (!isBlind && isDeaf) {
       _bindings.load(
-        1,
-        0,
-        tempObjectModel as Pointer<Char>,
-        tempObjectParam as Pointer<Char>,
-        tempFaceModel as Pointer<Char>,
-        tempFaceParam as Pointer<Char>,
-        tempLightModel as Pointer<Char>,
-        tempLightParam as Pointer<Char>,
-        tempEmotionModel as Pointer<Char>,
-        tempEmotionParam as Pointer<Char>,
-        tempFaceRegModel as Pointer<Char>,
-        tempFaceRegParam as Pointer<Char>,
-        tempFaceDeafModel as Pointer<Char>,
-        tempFaceDeafParam as Pointer<Char>,
-        tempDeafModel as Pointer<Char>,
-        tempDeafParam as Pointer<Char>,
-        tempMoneyModel as Pointer<Char>,
-        tempMoneyParam as Pointer<Char>,
-      );
+          1,
+          0,
+          tempObjectModel as Pointer<Char>,
+          tempObjectParam as Pointer<Char>,
+          tempFaceModel as Pointer<Char>,
+          tempFaceParam as Pointer<Char>,
+          tempLightModel as Pointer<Char>,
+          tempLightParam as Pointer<Char>,
+          tempEmotionModel as Pointer<Char>,
+          tempEmotionParam as Pointer<Char>,
+          tempFaceRegModel as Pointer<Char>,
+          tempFaceRegParam as Pointer<Char>,
+          tempFaceDeafModel as Pointer<Char>,
+          tempFaceDeafParam as Pointer<Char>,
+          tempDeafModel as Pointer<Char>,
+          tempDeafParam as Pointer<Char>,
+          tempMoneyModel as Pointer<Char>,
+          tempMoneyParam as Pointer<Char>,
+          tempDoorModel as Pointer<Char>,
+          tempDoorParam as Pointer<Char>);
     }
   }
 

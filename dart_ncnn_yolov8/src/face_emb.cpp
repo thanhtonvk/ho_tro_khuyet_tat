@@ -21,6 +21,7 @@ int FaceEmb::load(const char *model_path,
 
 
     modelEmb.opt.num_threads = ncnn::get_big_cpu_count();
+    modelEmb.opt.use_vulkan_compute = true;
 
 //    char parampath[256];
 //    char modelpath[256];

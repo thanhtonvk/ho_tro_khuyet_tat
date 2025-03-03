@@ -1,13 +1,9 @@
+#include "door_detection.h"
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "cpu.h"
-#include <stdbool.h>
-#include <opencv2/highgui/highgui.hpp>
-
-#include "cpu.h"
-#include "net.h"
 #include<iostream>
-#include "deaf_detection.h"
 
 static inline float intersection_area(const Object &a, const Object &b) {
     if (a.rect.x > b.rect.x + b.rect.width || a.rect.x + a.rect.width < b.rect.x ||
@@ -146,14 +142,13 @@ static ncnn::Mat transpose(const ncnn::Mat &in) {
     return out;
 }
 
-DeafDetection::DeafDetection() {
+DoorDetection::DoorDetection() {
     blob_pool_allocator.set_size_compare_ratio(0.f);
     workspace_pool_allocator.set_size_compare_ratio(0.f);
 }
 
-int
-DeafDetection::load(int _target_size, const float *_norm_vals, const char *model_path,
-                    const char *param_path) {
+int DoorDetection::load(int _target_size, const float *_norm_vals, const char *model_path,
+                         const char *param_path) {
     yolo.clear();
     blob_pool_allocator.clear();
     workspace_pool_allocator.clear();
@@ -167,12 +162,6 @@ DeafDetection::load(int _target_size, const float *_norm_vals, const char *model
     yolo.opt.blob_allocator = &blob_pool_allocator;
     yolo.opt.workspace_allocator = &workspace_pool_allocator;
     yolo.opt.use_vulkan_compute = true;
-
-//    char parampath[256];
-//    char modelpath[256];
-//    sprintf(parampath, "assets/yolo/best_cu_chi_v9.param");
-//    sprintf(modelpath, "assets/yolo/best_cu_chi_v9.bin");
-
     yolo.load_param(param_path);
     yolo.load_model(model_path);
 
@@ -184,9 +173,10 @@ DeafDetection::load(int _target_size, const float *_norm_vals, const char *model
     return 0;
 }
 
-int DeafDetection::detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects,
-                          int width,
-                          int height, float prob_threshold, float nms_threshold) {
+int
+DoorDetection::detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects,
+                       int width,
+                       int height, float prob_threshold, float nms_threshold) {
 
     int w = width;
     int h = height;
@@ -244,34 +234,26 @@ int DeafDetection::detect(const unsigned char *pixels, int pixelType, std::vecto
     std::vector <Object> newobjects;
     newobjects.resize(count);
     for (int i = 0; i < count; i++) {
+
         newobjects[i] = objects[picked[i]];
-        // adjust offset to original unpadded
         float x0 = (newobjects[i].rect.x - dw) / scale;
         float y0 = (newobjects[i].rect.y - dh) / scale;
         float x1 = (newobjects[i].rect.x + newobjects[i].rect.width - dw) / scale;
         float y1 = (newobjects[i].rect.y + newobjects[i].rect.height - dh) / scale;
 
-        //clip
         x0 = std::max(std::min(x0, (float) (width - 1)), 0.f);
         y0 = std::max(std::min(y0, (float) (height - 1)), 0.f);
         x1 = std::max(std::min(x1, (float) (width - 1)), 0.f);
         y1 = std::max(std::min(y1, (float) (height - 1)), 0.f);
+        newobjects[i].label += 80;
 
         newobjects[i].rect.x = x0;
         newobjects[i].rect.y = y0;
         newobjects[i].rect.width = x1 - x0;
         newobjects[i].rect.height = y1 - y0;
-    }
 
+
+    }
     objects = newobjects;
-    auto max_prob_obj = std::max_element(objects.begin(), objects.end(),
-                                         [](const Object &a, const Object &b) {
-                                             return a.prob < b.prob;
-                                         });
-    if (max_prob_obj != objects.end()) {
-        objects = {*max_prob_obj};
-    }
-
     return 0;
-
 }

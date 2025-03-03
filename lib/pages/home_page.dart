@@ -1,48 +1,39 @@
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:nguoi_khuyet_tat/providers/blind_camera_controller.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import '../features/dialog_micro/dialog_micro.dart';
 import '../features/face/face_detect_page.dart';
 import '../features/find_way/do_duong_page.dart';
 import '../features/learning/learning_screen.dart';
 import '../features/read_text/read_text_screen.dart';
+import '../providers/blind_camera_controller.dart';
 import '../providers/face_camera_controller.dart';
-import '../utils/app_text_style.dart';
 import 'drawer_list_feature.dart';
+
+// Tạo state provider để quản lý trạng thái
+final recognizedTextProvider = StateProvider<String>((ref) => "");
+final isListeningProvider = StateProvider<bool>((ref) => false);
 
 class HomePage extends HookConsumerWidget {
   HomePage({super.key, required this.title});
 
   final String title;
-  late FlutterTts flutterTts;
-  SpeechToText speechToText = SpeechToText();
-  bool isListening = false;
-  String recognizedText = "";
-
-  Future<void> _initSpeechToText() async {
-    await speechToText.initialize();
-  }
-
-  Future<void> _setupTTS(String lang) async {
-    await flutterTts.setLanguage(lang);
-    await flutterTts.setSpeechRate(0.6);
-    await flutterTts.setPitch(1.0);
-  }
-
-  Future<void> _speak(String text) async {
-    if (text.isNotEmpty) {
-      await flutterTts.speak(text);
-    }
-  }
+  final FlutterTts flutterTts = FlutterTts();
+  final SpeechToText speechToText = SpeechToText();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    _initSpeechToText();
-    flutterTts = FlutterTts();
-    _setupTTS('vi-VN');
+    final recognizedText = ref.watch(recognizedTextProvider);
+    final isListening = ref.watch(isListeningProvider);
+
+    useEffect(() {
+      _initSpeechToText();
+      _setupTTS('vi-VN');
+      return null;
+    }, []);
 
     return Scaffold(
       drawer: DrawerListFeatureWidget(),
@@ -77,7 +68,6 @@ class HomePage extends HookConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // Danh sách câu lệnh gợi ý
             const Text(
               "Câu lệnh có thể sử dụng:",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -89,12 +79,10 @@ class HomePage extends HookConsumerWidget {
             GestureDetector(
               onTap: () {
                 if (isListening) {
-                  _stopListening();
+                  _stopListening(ref);
                 } else {
                   _speak('Bạn hãy ra lệnh');
-                  flutterTts.setCompletionHandler(() async {
-                    _listenToSpeech(context, ref);
-                  });
+                  _listenToSpeech(context, ref);
                 }
               },
               child: AnimatedContainer(
@@ -157,74 +145,78 @@ class HomePage extends HookConsumerWidget {
   }
 
   void _listenToSpeech(BuildContext context, WidgetRef ref) async {
-    isListening = true;
+    ref.read(isListeningProvider.notifier).state = true;
+
     await speechToText.listen(
       onResult: (result) {
         if (result.finalResult) {
-          recognizedText = result.recognizedWords;
-          print('result speech: $recognizedText');
-          String content =
-              removeDiacritics(recognizedText.trim().toLowerCase());
+          final text = result.recognizedWords;
+          ref.read(recognizedTextProvider.notifier).state = text;
+          String content = removeDiacritics(text.trim().toLowerCase());
 
           if (content.contains("do duong")) {
             _speak('Mở chức năng dò đường');
-            flutterTts.setCompletionHandler(() async {
-              ref.read(blindCameraController).startImageStream(0);
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const DoDuongPage()));
-            });
+            ref.read(blindCameraController).startImageStream(0);
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const DoDuongPage()));
           } else if (content.contains("nguoi")) {
             _speak("Mở chức năng nhận diện người thân");
-            flutterTts.setCompletionHandler(() async {
-              ref.read(faceCameraController).startImageStream(0);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FaceDetectPage()));
-            });
+            ref.read(faceCameraController).startImageStream(0);
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const FaceDetectPage()));
           } else if (content.contains("quay so") ||
               content.contains("goi dien")) {
             _speak("Hãy đọc số điện thoại");
-            flutterTts.setCompletionHandler(() async {
-              showDialog(
-                  context: context,
-                  builder: (context) =>
-                      const DialogMicro(isCallContact: false));
-            });
+            showDialog(
+                context: context,
+                builder: (context) => const DialogMicro(isCallContact: false));
           } else if (content.contains("danh ba")) {
             _speak("Hãy đọc tên trong danh bạ");
-            flutterTts.setCompletionHandler(() async {
-              showDialog(
-                  context: context,
-                  builder: (context) => const DialogMicro(isCallContact: true));
-            });
+            showDialog(
+                context: context,
+                builder: (context) => const DialogMicro(isCallContact: true));
           } else if (content.contains("doc")) {
             _speak("Mở chức năng đọc chữ");
-            flutterTts.setCompletionHandler(() async {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ReadTextScreen()));
-            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ReadTextScreen()));
           } else if (content.contains("hoc")) {
             _speak("Mở chức năng học tập");
-            flutterTts.setCompletionHandler(() async {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          const LearningScreen(title: "Học tập")));
-            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        const LearningScreen(title: "Học tập")));
           }
+          _stopListening(ref);
         }
       },
-      listenFor: Duration(seconds: 30),
+      listenFor: const Duration(seconds: 10),
       localeId: 'vi-VN',
     );
   }
 
-  void _stopListening() async {
-    isListening = false;
+  void _stopListening(WidgetRef ref) async {
+    ref.read(isListeningProvider.notifier).state = false;
     await speechToText.stop();
+  }
+
+  Future<void> _initSpeechToText() async {
+    await speechToText.initialize();
+  }
+
+  Future<void> _setupTTS(String lang) async {
+    await flutterTts.setLanguage(lang);
+    await flutterTts.setSpeechRate(0.6);
+    await flutterTts.setPitch(1.0);
+  }
+
+  Future<void> _speak(String text) async {
+    if (text.isNotEmpty) {
+      await flutterTts.speak(text);
+    }
   }
 }

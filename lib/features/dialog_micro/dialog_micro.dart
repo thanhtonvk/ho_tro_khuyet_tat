@@ -93,7 +93,7 @@ class _DialogMicroState extends State<DialogMicro> {
           _stopListening();
         }
       },
-      listenFor: const Duration(seconds: 30),
+      listenFor: const Duration(seconds: 10),
       localeId: 'vi-VN',
     );
   }

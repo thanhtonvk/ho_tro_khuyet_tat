@@ -31,6 +31,7 @@ add_library(nguoi_khuyet_tat_sdk SHARED
         "object_detection.cpp"
         "scrfd.cpp"
         "face_emb.cpp"
+        "door_detection.cpp"
 )
 
 

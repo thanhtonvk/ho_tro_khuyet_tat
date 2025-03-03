@@ -128,6 +128,8 @@ class NguoiKhuyetTatSDKBindings {
     ffi.Pointer<ffi.Char> deaf_param,
     ffi.Pointer<ffi.Char> money_model,
     ffi.Pointer<ffi.Char> model_param,
+    ffi.Pointer<ffi.Char> door_model,
+    ffi.Pointer<ffi.Char> door_param,
   ) {
     return _load(
       deaf,
@@ -148,6 +150,8 @@ class NguoiKhuyetTatSDKBindings {
       deaf_param,
       money_model,
       model_param,
+      door_model,
+      door_param,
     );
   }
 
@@ -171,11 +175,15 @@ class NguoiKhuyetTatSDKBindings {
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
+              ffi.Pointer<ffi.Char>,
               ffi.Pointer<ffi.Char>)>>('load');
   late final _load = _loadPtr.asFunction<
       void Function(
           int,
           int,
+          ffi.Pointer<ffi.Char>,
+          ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,
           ffi.Pointer<ffi.Char>,

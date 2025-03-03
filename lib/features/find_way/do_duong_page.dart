@@ -55,7 +55,7 @@ class DoDuongPage extends HookConsumerWidget {
                             width: previewImage.width.toDouble(),
                             height: previewImage.height.toDouble(),
                             child: CustomPaint(
-                              painter: YoloResultPainter(
+                              painter: ObjectResultPainter(
                                 image: previewImage,
                                 results: ref.watch(objectDetectController),
                                 labels: labels,

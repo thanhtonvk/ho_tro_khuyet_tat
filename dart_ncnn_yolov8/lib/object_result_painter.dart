@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 
 import 'models/yolo_result.dart';
 
-class YoloResultPainter extends CustomPainter {
-  YoloResultPainter({
+class ObjectResultPainter extends CustomPainter {
+  ObjectResultPainter({
     required this.image,
     required this.results,
     required this.labels,
@@ -68,6 +68,7 @@ class YoloResultPainter extends CustomPainter {
             rect.top,
           ),
         );
+      break;
     }
   }
 

@@ -161,7 +161,7 @@ int MoneyDetection::load(int _target_size, const float *_norm_vals, const char *
     yolo.opt.num_threads = ncnn::get_big_cpu_count();
     yolo.opt.blob_allocator = &blob_pool_allocator;
     yolo.opt.workspace_allocator = &workspace_pool_allocator;
-    yolo.opt.use_vulkan_compute = false;
+    yolo.opt.use_vulkan_compute = true;
 //
 //    char parampath[256];
 //    char modelpath[256];
@@ -251,7 +251,7 @@ MoneyDetection::detect(const unsigned char *pixels, int pixelType, std::vector <
         y0 = std::max(std::min(y0, (float) (height - 1)), 0.f);
         x1 = std::max(std::min(x1, (float) (width - 1)), 0.f);
         y1 = std::max(std::min(y1, (float) (height - 1)), 0.f);
-        newobjects[i].label += 80;
+        newobjects[i].label += 83;
 
         newobjects[i].rect.x = x0;
         newobjects[i].rect.y = y0;

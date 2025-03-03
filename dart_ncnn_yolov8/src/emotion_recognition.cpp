@@ -41,6 +41,7 @@ int EmotionRecognition::load(const char *model_path,
     ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
     model.opt = ncnn::Option();
     model.opt.num_threads = ncnn::get_big_cpu_count();
+    model.opt.use_vulkan_compute = true;
 //    char parampath[256];
 //    char modelpath[256];
 //    sprintf(parampath, "assets/yolo/model.param");

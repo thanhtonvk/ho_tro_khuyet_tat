@@ -46,7 +46,9 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
         deafModel: 'assets/yolo/best_cu_chi_v9.bin',
         deafParam: 'assets/yolo/best_cu_chi_v9.param',
         moneyModel: 'assets/yolo/money_detection.bin',
-        moneyParam: 'assets/yolo/money_detection.param');
+        moneyParam: 'assets/yolo/money_detection.param',
+        doorModel: 'assets/yolo/door.bin',
+        doorParam: 'assets/yolo/door.param');
     flutterTts = FlutterTts();
     _setupTTS('vi-VN');
 

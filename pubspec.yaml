@@ -59,6 +59,8 @@ dependencies:
   diacritic: ^0.1.6
   contacts_service: ^0.6.3
   video_player: ^2.9.3
+  flutter_hooks: ^0.20.4  # (Cập nhật bản mới nhất)
+
 
 dev_dependencies:
   flutter_test:

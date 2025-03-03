@@ -48,7 +48,9 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
         deafModel: 'assets/yolo/best_cu_chi_v9.bin',
         deafParam: 'assets/yolo/best_cu_chi_v9.param',
         moneyModel: 'assets/yolo/money_detection.bin',
-        moneyParam: 'assets/yolo/money_detection.param');
+        moneyParam: 'assets/yolo/money_detection.param',
+        doorModel: 'assets/yolo/door.bin',
+        doorParam: 'assets/yolo/door.param');
 
     flutterTts = FlutterTts();
     _setupTTS('vi-VN');
@@ -106,7 +108,6 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
               ref.read(blindCameraController).deviceOrientationType,
           sensorOrientation: ref.read(blindCameraController).sensorOrientation,
         );
-        print(flash);
         if (flash == 'bright') {
           ref.read(blindCameraController).toggleFlash('bright');
         } else {
@@ -115,11 +116,12 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
 
         if (state.isNotEmpty) {
           YoloResult obj = state.first;
-          String name = labels[state.first.label];
+          print(obj.toString());
+          String name = labels[obj.label];
           double width = cameraImage.height.toDouble();
           double height = cameraImage.width.toDouble();
           int label = obj.label;
-          if (obj.label < 80) {
+          if (obj.label < 83) {
             double focalLength = CalDistance.calculateFocalLength(
                 CalDistance.knownDistances[label],
                 CalDistance.knownWidths[label],
