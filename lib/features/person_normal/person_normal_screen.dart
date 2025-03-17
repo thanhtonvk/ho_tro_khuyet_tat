@@ -86,10 +86,10 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
       "không biết": "khong_biet.mp4",
       "không hiểu": "khong_hieu.mp4",
       "không thích": "khong_thich_vid.mp4",
-      "mắc cở": "mac_co.mp4",
+      "mắc cỡ": "mac_co.mp4",
       "nhớ": "nho.mp4",
       "sợ": "so_vid.mp4",
-      "bạn thích không": "thich_vid.mp4",
+      "thích": "thich_vid.mp4",
       "thông cảm": "thong_cam.mp4",
       "tình cảm": "tinh_cam.mp4",
       "tò mò": "to_mo.mp4",
@@ -138,11 +138,42 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
     speech.stop();
   }
 
+  late List<String> videoQueue;
+
+  void runVideos(String text) {
+    currentIndex = 0;
+    videoQueue = extractVideoSequence(text);
+    videoQueue.reversed;
+    playNextVideo();
+  }
+
+  void playNextVideo() {
+    if (currentIndex < videoQueue.length) {
+      if (_videoController != null) {
+        _videoController!.dispose();
+      }
+      _videoController = VideoPlayerController.asset(
+          "assets/videos/${videoQueue[currentIndex]}")
+        ..initialize().then((_) {
+          setState(() {});
+          _videoController?.play();
+        })
+        ..addListener(() {
+          if (_videoController!.value.position >=
+              _videoController!.value.duration) {
+            currentIndex++;
+            if (currentIndex < videoQueue.length) {
+              playNextVideo();
+            }
+          }
+        });
+    }
+  }
+
   void playVideo(String keyword) {
     if (_videoController != null) {
       _videoController!.dispose();
     }
-    print('keyword $keyword');
     _videoController = VideoPlayerController.asset('assets/videos/$keyword')
       ..initialize().then((_) {
         setState(() {});
@@ -165,10 +196,41 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
     });
   }
 
+  List<String> extractVideoSequence(String text) {
+    List<String> queue = [];
+    String remainingText = text.toLowerCase();
+    int index = 0;
+
+    while (index < remainingText.length) {
+      String bestMatch = "";
+      String bestVideo = "";
+
+      for (String keyword in keywordToVideoMap.keys) {
+        if (remainingText.startsWith(keyword, index) && keyword.length > bestMatch.length) {
+          bestMatch = keyword;
+          bestVideo = keywordToVideoMap[keyword]!;
+        }
+      }
+
+      if (bestMatch.isNotEmpty) {
+        queue.add(bestVideo);
+        index += bestMatch.length; // Nhảy qua từ đã tìm thấy
+      } else {
+        index++; // Không tìm thấy từ khóa, tiếp tục kiểm tra ký tự tiếp theo
+      }
+    }
+
+    print('queue video $queue');
+    return queue;
+  }
+
+
+  int currentIndex = 0;
+
   @override
   void initState() {
     super.initState();
-    createChuCaiDict(); // Khởi tạo danh sách ban đầu
+    createCauDict(); // Khởi tạo danh sách ban đầu
   }
 
   @override
@@ -268,8 +330,9 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
                   borderSide: BorderSide.none,
                 ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.volume_up, color: Colors.blueAccent),
-                  onPressed: () => speakText(textController.text),
+                  icon: const Icon(Icons.play_arrow_outlined,
+                      color: Colors.blueAccent),
+                  onPressed: () => runVideos(textController.text),
                 ),
               ),
             ),

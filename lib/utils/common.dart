@@ -7,6 +7,8 @@ import 'package:path_provider/path_provider.dart';
 
 class Common {
   static ValueNotifier<String> noiDung = ValueNotifier<String>("");
+  static ValueNotifier<String> roomId = ValueNotifier<String>("");
+  static ValueNotifier<String> userId = ValueNotifier<String>("");
 
   static List<double> xywhToCenter(double x, double y, double w, double h) {
     double centerX = x + w / 2;

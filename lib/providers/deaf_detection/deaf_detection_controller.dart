@@ -10,9 +10,12 @@ import 'package:nguoi_khuyet_tat/providers/giao_tiep_tu_camera_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/ncnn_yolo_options.dart';
 import 'package:nguoi_khuyet_tat/utils/common.dart';
 
+final labelsDeafProvider = StateProvider<List<String>>((ref) => labelsDeafVI);
+final languageProvider = StateProvider<String>((ref) => 'vi');
+
 final deafDetectionController =
     StateNotifierProvider<DeafDetectionController, List<YoloResult>>(
-  DeafDetectionController.new,
+  (ref) => DeafDetectionController(ref),
 );
 
 class DeafDetectionController extends StateNotifier<List<YoloResult>> {
@@ -23,57 +26,72 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
   bool isSpeaking = false;
   final nguoiKhuyetTatSDK = NguoiKhuyetTatSdk();
 
-  static final previewImage = StateProvider<ui.Image?>(
-    (_) => null,
-  );
+  static final previewImage = StateProvider<ui.Image?>((_) => null);
 
-  Future<void> initialize() async {
-    await nguoiKhuyetTatSDK.load(
-        isBlind: false,
-        isDeaf: true,
-        objectModel: 'assets/yolo/yolov8n.bin',
-        objectParam: 'assets/yolo/yolov8n.param',
-        faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
-        faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
-        lightModel: 'assets/yolo/lighttraffic.ncnn.bin',
-        lightParam: 'assets/yolo/lighttraffic.ncnn.param',
-        emotionModel: 'assets/yolo/model.bin',
-        emotionParam: 'assets/yolo/model.param',
-        faceRegModel: 'assets/yolo/w600k_mbf.bin',
-        faceRegParam: 'assets/yolo/w600k_mbf.param',
-        faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
-        faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
-        deafModel: 'assets/yolo/best_cu_chi_v9.bin',
-        deafParam: 'assets/yolo/best_cu_chi_v9.param',
-        moneyModel: 'assets/yolo/money_detection.bin',
-        moneyParam: 'assets/yolo/money_detection.param',
-        doorModel: 'assets/yolo/door.bin',
-        doorParam: 'assets/yolo/door.param');
+  /// **Gọi từ Widget để khởi tạo**
+  Future<void> initializeController() async {
+    _initializeTTS();
+    await initializeSDK();
+  }
+
+  /// **Khởi tạo TTS**
+  void _initializeTTS() {
     flutterTts = FlutterTts();
     _setupTTS('vi-VN');
 
-    // Xử lý khi nói xong
-    flutterTts.setCompletionHandler(() async {
-      await Future.delayed(const Duration(seconds: 1)); // Đợi 3 giây
-      isSpeaking = false; // Cho phép đọc tiếp
+    flutterTts.setCompletionHandler(() {
+      Future.delayed(const Duration(seconds: 2), () {
+        isSpeaking = false;
+      });
     });
   }
 
-  Future<void> _speak(String text) async {
+  /// **Cấu hình TTS**
+  Future<void> _setupTTS(String lang) async {
+    await flutterTts.setLanguage(lang);
+    await flutterTts.setSpeechRate(0.6);
+    await flutterTts.setPitch(1.0);
+  }
+
+  /// **Khởi tạo SDK**
+  Future<void> initializeSDK() async {
+    await nguoiKhuyetTatSDK.load(
+      isBlind: false,
+      isDeaf: true,
+      objectModel: '',
+      objectParam: '',
+      faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+      faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+      lightModel: "",
+      lightParam: "",
+      emotionModel: "assets/yolo/model.bin",
+      emotionParam: "assets/yolo/model.param",
+      faceRegModel: '',
+      faceRegParam: '',
+      faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+      faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+      deafModel: 'assets/yolo/best_model_cu_chi_tuyen_quang.bin',
+      deafParam: 'assets/yolo/best_model_cu_chi_tuyen_quang.param',
+      moneyModel: '',
+      moneyParam: '',
+      doorModel: '',
+      doorParam: '',
+    );
+  }
+
+  /// **Phát âm thanh nếu không bị gián đoạn**
+  Future<void> _speak(String text, String language) async {
     if (text.isNotEmpty && !isSpeaking) {
       isSpeaking = true;
+      await flutterTts.setLanguage(language);
       await flutterTts.speak(text);
     }
   }
 
-  Future<void> _setupTTS(String lang) async {
-    await flutterTts.setLanguage(lang); // Chọn tiếng Việt
-    await flutterTts.setSpeechRate(0.6); // Tốc độ nói
-    await flutterTts.setPitch(1.0); // Cao độ
-  }
-
+  /// **Nhận diện từ Camera**
   Future<void> detectDeaf(CameraImage cameraImage) async {
     final completer = Completer<void>();
+
     switch (cameraImage.format.group) {
       case ImageFormatGroup.unknown:
       case ImageFormatGroup.jpeg:
@@ -96,11 +114,15 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
               },
             )
             .result;
+
         bool isExist = false;
+        String lang = ref.read(languageProvider);
         for (YoloResult yoloResult in state) {
           if (yoloResult.label < 19) {
-            _speak(labelsDeaf[yoloResult.label]);
-            Common.noiDung.value = labelsDeaf[yoloResult.label];
+            _speak(ref.read(labelsDeafProvider)[yoloResult.label], lang);
+            Common.noiDung.value =
+                ref.read(labelsDeafProvider)[yoloResult.label];
+
             isExist = true;
             break;
           }
@@ -110,10 +132,10 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
         }
         break;
       case ImageFormatGroup.nv21:
-        break;
       case ImageFormatGroup.bgra8888:
         break;
     }
+
     return completer.future;
   }
 }

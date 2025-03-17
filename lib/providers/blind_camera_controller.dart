@@ -4,8 +4,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
-import 'package:nguoi_khuyet_tat/providers/face_detection/face_detect_controller.dart';
-import 'package:nguoi_khuyet_tat/providers/face_recognition/face_recognition_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/object_detection/object_detection_controller.dart';
 
 final blindCameraController = Provider(BlindCameraController.new);
@@ -93,7 +91,7 @@ class BlindCameraController {
     final camera = (await availableCameras())[cameraIndex];
     _cameraController = CameraController(
       camera,
-      ResolutionPreset.high,
+      ResolutionPreset.low,
       enableAudio: false,
     );
     await _cameraController!.initialize();

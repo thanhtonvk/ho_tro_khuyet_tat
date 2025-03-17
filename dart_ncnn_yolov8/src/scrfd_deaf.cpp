@@ -184,21 +184,17 @@ generate_proposals(const ncnn::Mat &anchors, int feat_stride, const ncnn::Mat &s
 int SCRFD_DEAF::load(const char *model_path,
                      const char *param_path) {
     scrfd_deaf.clear();
-    ncnn::set_cpu_powersave(2);
-    ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
-
+    ncnn::set_cpu_powersave(0); // Tắt chế độ tiết kiệm năng lượng, dùng tối đa hiệu suất
+    ncnn::set_omp_num_threads(ncnn::get_physical_big_cpu_count()); // Chạy trên tất cả các big-core CPU
     scrfd_deaf.opt = ncnn::Option();
-
-#if NCNN_VULKAN
-    scrfd_deaf.opt.use_vulkan_compute = false;
-#endif
-
-    scrfd_deaf.opt.num_threads = ncnn::get_big_cpu_count();
-
-//    char parampath[256];
-//    char modelpath[256];
-//    sprintf(parampath, "assets/yolo/scrfd_deaf_2.5g_kps-opt2.param");
-//    sprintf(modelpath, "assets/yolo/scrfd_deaf_2.5g_kps-opt2.bin");
+    scrfd_deaf.opt.num_threads = ncnn::get_physical_big_cpu_count();
+    scrfd_deaf.opt.use_vulkan_compute = true; // Kích hoạt GPU nếu có
+    scrfd_deaf.opt.use_fp16_arithmetic = true; // Sử dụng FP16 để tăng tốc trên CPU/GPU hỗ trợ
+    scrfd_deaf.opt.use_packing_layout = true; // Tăng tốc độ xử lý tensor
+    scrfd_deaf.opt.use_bf16_storage = true; // Dùng định dạng BF16 nếu thiết bị hỗ trợ
+    scrfd_deaf.opt.use_winograd_convolution = true; // Tăng tốc tính toán convolution
+    scrfd_deaf.opt.use_sgemm_convolution = true; // Sử dụng SGEMM cho hiệu suất tốt hơn
+    scrfd_deaf.opt.lightmode = true; // Giảm bộ nhớ sử dụng, tối ưu tốc độ
 
     scrfd_deaf.load_param(param_path);
     scrfd_deaf.load_model(model_path);

@@ -46,17 +46,20 @@ class NguoiKhuyetTatSdk {
   late NguoiKhuyetTatSDKBindings _bindings;
 
   Future<String> _copy(String assetsPath) async {
-    final documentDir = await getApplicationDocumentsDirectory();
+    try {
+      final documentDir = await getApplicationDocumentsDirectory();
+      final data = await rootBundle.load(assetsPath);
 
-    final data = await rootBundle.load(assetsPath);
-
-    final file = File('${documentDir.path}/$assetsPath')
-      ..createSync(recursive: true)
-      ..writeAsBytesSync(
-        data.buffer.asUint8List(),
-        flush: true,
-      );
-    return file.path;
+      final file = File('${documentDir.path}/$assetsPath')
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(
+          data.buffer.asUint8List(),
+          flush: true,
+        );
+      return file.path;
+    } catch (err) {
+      return "";
+    }
   }
 
   Future<void> load(
@@ -262,6 +265,99 @@ class NguoiKhuyetTatSdk {
     }
     final results = YoloResult.create(_bindings
         .predictDeaf(pixelsNative, pixelFormat.type, width, height)
+        .cast<Utf8>()
+        .toDartString());
+    calloc.free(pixelsNative);
+    return results;
+  }
+
+  DetectResult detectAnyObjectYUV420({
+    required Uint8List y,
+    required Uint8List u,
+    required Uint8List v,
+    required int height,
+    @Deprecated("width is automatically calculated from the length of the y.")
+    int width = 0,
+    required KannaRotateDeviceOrientationType deviceOrientationType,
+    required int sensorOrientation,
+    void Function(ui.Image image)? onDecodeImage,
+    void Function(ui.Image image)? onYuv420sp2rgbImage,
+  }) {
+    final yuv420sp = yuv420sp2Uint8List(
+      y: y,
+      u: u,
+      v: v,
+    );
+
+    final width = y.length ~/ height;
+
+    final pixels = yuv420sp2rgb(
+      yuv420sp: yuv420sp,
+      width: width,
+      height: height,
+    );
+    if (onYuv420sp2rgbImage != null) {
+      final rgba = rgb2rgba(
+        rgb: pixels,
+        width: width,
+        height: height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        width,
+        height,
+        ui.PixelFormat.rgba8888,
+        onYuv420sp2rgbImage,
+      );
+    }
+
+    final rotated = kannaRotate(
+      pixels: pixels,
+      width: width,
+      height: height,
+      deviceOrientationType: deviceOrientationType,
+      sensorOrientation: sensorOrientation,
+    );
+
+    if (onDecodeImage != null) {
+      final rgba = rgb2rgba(
+        rgb: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      );
+
+      ui.decodeImageFromPixels(
+        rgba,
+        rotated.width,
+        rotated.height,
+        ui.PixelFormat.rgba8888,
+        onDecodeImage,
+      );
+    }
+
+    return DetectResult(
+      result: detectAnyObject(
+        pixels: rotated.pixels ?? Uint8List(0),
+        width: rotated.width,
+        height: rotated.height,
+      ),
+      image: rotated,
+    );
+  }
+
+  List<YoloResult> detectAnyObject(
+      {required Uint8List pixels,
+      PixelFormat pixelFormat = PixelFormat.rgb,
+      required int width,
+      required int height}) {
+    final pixelsNative = calloc.allocate<UnsignedChar>(pixels.length);
+
+    for (var i = 0; i < pixels.length; i++) {
+      pixelsNative[i] = pixels[i];
+    }
+    final results = YoloResult.create(_bindings
+        .detectAnyObject(pixelsNative, pixelFormat.type, width, height)
         .cast<Utf8>()
         .toDartString());
     calloc.free(pixelsNative);

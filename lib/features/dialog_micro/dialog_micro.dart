@@ -1,10 +1,10 @@
-import 'package:contacts_service/contacts_service.dart';
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:nguoi_khuyet_tat/utils/app_text_style.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 
 class DialogMicro extends StatefulWidget {
   const DialogMicro({super.key, required this.isCallContact});
@@ -58,7 +58,8 @@ class _DialogMicroState extends State<DialogMicro> {
               },
               child: CircleAvatar(
                 radius: 40,
-                backgroundColor: isListening ? Colors.redAccent : Colors.blueAccent,
+                backgroundColor:
+                    isListening ? Colors.redAccent : Colors.blueAccent,
                 child: isListening
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Icon(Icons.mic, color: Colors.white, size: 40),
@@ -69,7 +70,8 @@ class _DialogMicroState extends State<DialogMicro> {
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[300],
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               child: const Text('Đóng', style: TextStyle(color: Colors.black)),
             ),
@@ -93,7 +95,7 @@ class _DialogMicroState extends State<DialogMicro> {
           _stopListening();
         }
       },
-      listenFor: const Duration(seconds: 10),
+      listenFor: const Duration(seconds: 5),
       localeId: 'vi-VN',
     );
   }
@@ -116,9 +118,10 @@ class _DialogMicroState extends State<DialogMicro> {
     String normalizedName = removeDiacritics(name.trim().toLowerCase());
     if (contacts.isNotEmpty) {
       for (var contact in contacts) {
-        String normalizedContactName = removeDiacritics(contact.displayName!.toLowerCase());
+        String normalizedContactName =
+            removeDiacritics(contact.displayName!.toLowerCase());
         if (normalizedContactName.contains(normalizedName)) {
-          await makePhoneCall(contact.phones!.first.value!);
+          await makePhoneCall(contact.phones!.first.number);
           break;
         }
       }
@@ -127,12 +130,16 @@ class _DialogMicroState extends State<DialogMicro> {
 
   Future<void> _fetchContacts() async {
     if (await Permission.contacts.request().isGranted) {
-      Iterable<Contact> contactList = await ContactsService.getContacts(withThumbnails: false);
+      List<Contact> _contacts = await FlutterContacts.getContacts(
+        withProperties: true, // Lấy cả số điện thoại
+      );
       setState(() {
-        contacts = contactList.toList();
+        contacts = _contacts;
       });
     } else {
-      print('Không có quyền truy cập danh bạ');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bạn cần cấp quyền truy cập danh bạ')),
+      );
     }
   }
 }

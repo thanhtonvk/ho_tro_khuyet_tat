@@ -1,147 +1,179 @@
 import 'package:diacritic/diacritic.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:nguoi_khuyet_tat/pages/deaf_page.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import '../features/dialog_micro/dialog_micro.dart';
-import '../features/face/face_detect_page.dart';
-import '../features/find_way/do_duong_page.dart';
-import '../features/learning/learning_screen.dart';
-import '../features/read_text/read_text_screen.dart';
-import '../providers/blind_camera_controller.dart';
-import '../providers/face_camera_controller.dart';
-import 'drawer_list_feature.dart';
 
-// Tạo state provider để quản lý trạng thái
-final recognizedTextProvider = StateProvider<String>((ref) => "");
-final isListeningProvider = StateProvider<bool>((ref) => false);
+import 'blind_page.dart';
 
 class HomePage extends HookConsumerWidget {
-  HomePage({super.key, required this.title});
+  HomePage({super.key});
 
-  final String title;
+  final recognizedTextProvider = StateProvider<String>((ref) => "");
+  final isListeningProvider = StateProvider<bool>((ref) => false);
   final FlutterTts flutterTts = FlutterTts();
   final SpeechToText speechToText = SpeechToText();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final recognizedText = ref.watch(recognizedTextProvider);
     final isListening = ref.watch(isListeningProvider);
-
     useEffect(() {
       _initSpeechToText();
       _setupTTS('vi-VN');
       return null;
     }, []);
-
     return Scaffold(
-      drawer: DrawerListFeatureWidget(),
-      appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        title: const Text(
-          "Người khuyết tật",
-          style: TextStyle(color: Colors.white),
+        appBar: AppBar(
+          title: const Text(
+            "Hỗ trợ người khuyết tật",
+            style: TextStyle(
+                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.blueAccent,
         ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            // Hiển thị văn bản nhận diện
-            Container(
-              padding: const EdgeInsets.all(10),
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.blueAccent),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                recognizedText.isEmpty
-                    ? "Bạn hãy nói gì đó..."
-                    : recognizedText,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Câu lệnh có thể sử dụng:",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            _buildCommandList(),
-            const Spacer(),
-            // Nút micro với hiệu ứng
-            GestureDetector(
-              onTap: () {
-                if (isListening) {
-                  _stopListening(ref);
-                } else {
-                  _speak('Bạn hãy ra lệnh');
-                  _listenToSpeech(context, ref);
-                }
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: isListening ? 90 : 80,
-                width: isListening ? 90 : 80,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isListening ? Colors.redAccent : Colors.blueAccent,
-                  boxShadow: [
-                    BoxShadow(
-                      color: isListening ? Colors.red : Colors.blue,
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.mic,
-                    size: 40,
-                    color: Colors.white,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Chức năng dành cho người mù
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => BlindPage(
+                              title: 'Hỗ trợ người mù',
+                            )),
+                  );
+                },
+                child: Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: const Column(
+                    children: [
+                      Icon(
+                        Icons.visibility_off, // Icon đại diện cho người mù
+                        size: 80,
+                        color: Colors.white,
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Dành cho Khiếm thị",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildCommandList() {
-    final commands = [
-      {"text": "Dò đường", "icon": Icons.map},
-      {"text": "Nhận diện người thân", "icon": Icons.person},
-      {"text": "Gọi điện thoại", "icon": Icons.phone},
-      {"text": "Đọc chữ", "icon": Icons.menu_book},
-      {"text": "Học tập", "icon": Icons.school},
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Wrap(
-        spacing: 10,
-        runSpacing: 10,
-        alignment: WrapAlignment.center,
-        children: commands
-            .map(
-              (cmd) => Chip(
-                label: Text(cmd["text"] as String),
-                avatar: Icon(cmd["icon"] as IconData),
-                backgroundColor: Colors.blueAccent.withOpacity(0.2),
+              // Chức năng dành cho người câm điếc
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DeafPage(
+                              title: 'Hỗ trợ người câm điếc',
+                            )),
+                  );
+                },
+                child: Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.orangeAccent,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: const Column(
+                    children: [
+                      Icon(
+                        Icons.hearing_disabled,
+                        // Icon đại diện cho người câm điếc
+                        size: 80,
+                        color: Colors.white,
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        "Dành cho Câm điếc",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            )
-            .toList(),
-      ),
-    );
+              const Spacer(),
+              // Nút micro với hiệu ứng
+              GestureDetector(
+                onTap: () {
+                  if (isListening) {
+                    _stopListening(ref);
+                  } else {
+                    _speak('Bạn hãy ra lệnh');
+                    _listenToSpeech(context, ref);
+                  }
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: isListening ? 90 : 80,
+                  width: isListening ? 90 : 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isListening ? Colors.redAccent : Colors.blueAccent,
+                    boxShadow: [
+                      BoxShadow(
+                        color: isListening ? Colors.red : Colors.blue,
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.mic,
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 50,
+              )
+            ],
+          ),
+        ));
   }
 
   void _listenToSpeech(BuildContext context, WidgetRef ref) async {
@@ -154,47 +186,24 @@ class HomePage extends HookConsumerWidget {
           ref.read(recognizedTextProvider.notifier).state = text;
           String content = removeDiacritics(text.trim().toLowerCase());
 
-          if (content.contains("do duong")) {
-            _speak('Mở chức năng dò đường');
-            ref.read(blindCameraController).startImageStream(0);
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const DoDuongPage()));
-          } else if (content.contains("nguoi")) {
-            _speak("Mở chức năng nhận diện người thân");
-            ref.read(faceCameraController).startImageStream(0);
+          if (content.contains("khiem thi")) {
+            _speak('Mở chức năng khiếm thị');
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const FaceDetectPage()));
-          } else if (content.contains("quay so") ||
-              content.contains("goi dien")) {
-            _speak("Hãy đọc số điện thoại");
-            showDialog(
-                context: context,
-                builder: (context) => const DialogMicro(isCallContact: false));
-          } else if (content.contains("danh ba")) {
-            _speak("Hãy đọc tên trong danh bạ");
-            showDialog(
-                context: context,
-                builder: (context) => const DialogMicro(isCallContact: true));
-          } else if (content.contains("doc")) {
-            _speak("Mở chức năng đọc chữ");
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const ReadTextScreen()));
-          } else if (content.contains("hoc")) {
-            _speak("Mở chức năng học tập");
+                    builder: (context) => BlindPage(title: "Hỗ trợ người mù")));
+          } else if (content.contains("cam diec")) {
+            _speak('Mở chức năng câm điếc');
             Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) =>
-                        const LearningScreen(title: "Học tập")));
+                        DeafPage(title: "Dành cho người câm điếc")));
           }
           _stopListening(ref);
         }
       },
-      listenFor: const Duration(seconds: 10),
+      listenFor: const Duration(seconds: 5),
       localeId: 'vi-VN',
     );
   }

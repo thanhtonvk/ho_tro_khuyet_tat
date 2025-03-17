@@ -155,23 +155,18 @@ int
 DeafDetection::load(int _target_size, const float *_norm_vals, const char *model_path,
                     const char *param_path) {
     yolo.clear();
-    blob_pool_allocator.clear();
-    workspace_pool_allocator.clear();
-
-    ncnn::set_cpu_powersave(2);
-    ncnn::set_omp_num_threads(ncnn::get_big_cpu_count());
-
+    ncnn::set_cpu_powersave(0); // Tắt chế độ tiết kiệm năng lượng, dùng tối đa hiệu suất
+    ncnn::set_omp_num_threads(ncnn::get_physical_big_cpu_count()); // Chạy trên tất cả các big-core CPU
     yolo.opt = ncnn::Option();
+    yolo.opt.num_threads = ncnn::get_physical_big_cpu_count();
+    yolo.opt.use_vulkan_compute = true; // Kích hoạt GPU nếu có
+    yolo.opt.use_fp16_arithmetic = true; // Sử dụng FP16 để tăng tốc trên CPU/GPU hỗ trợ
+    yolo.opt.use_packing_layout = true; // Tăng tốc độ xử lý tensor
+    yolo.opt.use_bf16_storage = true; // Dùng định dạng BF16 nếu thiết bị hỗ trợ
+    yolo.opt.use_winograd_convolution = true; // Tăng tốc tính toán convolution
+    yolo.opt.use_sgemm_convolution = true; // Sử dụng SGEMM cho hiệu suất tốt hơn
+    yolo.opt.lightmode = true; // Giảm bộ nhớ sử dụng, tối ưu tốc độ
 
-    yolo.opt.num_threads = ncnn::get_big_cpu_count();
-    yolo.opt.blob_allocator = &blob_pool_allocator;
-    yolo.opt.workspace_allocator = &workspace_pool_allocator;
-    yolo.opt.use_vulkan_compute = true;
-
-//    char parampath[256];
-//    char modelpath[256];
-//    sprintf(parampath, "assets/yolo/best_cu_chi_v9.param");
-//    sprintf(modelpath, "assets/yolo/best_cu_chi_v9.bin");
 
     yolo.load_param(param_path);
     yolo.load_model(model_path);

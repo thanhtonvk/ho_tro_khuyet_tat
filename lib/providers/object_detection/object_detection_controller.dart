@@ -6,6 +6,7 @@ import 'package:camera/camera.dart';
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:nguoi_khuyet_tat/providers/money_camera_controller.dart';
 import 'package:nguoi_khuyet_tat/utils/common.dart';
 
 import '../../utils/cal_distance.dart';
@@ -35,20 +36,20 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
         isDeaf: false,
         objectModel: 'assets/yolo/yolov8n.bin',
         objectParam: 'assets/yolo/yolov8n.param',
-        faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
-        faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
-        lightModel: 'assets/yolo/lighttraffic.ncnn.bin',
-        lightParam: 'assets/yolo/lighttraffic.ncnn.param',
-        emotionModel: 'assets/yolo/model.bin',
-        emotionParam: 'assets/yolo/model.param',
-        faceRegModel: 'assets/yolo/w600k_mbf.bin',
-        faceRegParam: 'assets/yolo/w600k_mbf.param',
-        faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
-        faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
-        deafModel: 'assets/yolo/best_cu_chi_v9.bin',
-        deafParam: 'assets/yolo/best_cu_chi_v9.param',
-        moneyModel: 'assets/yolo/money_detection.bin',
-        moneyParam: 'assets/yolo/money_detection.param',
+        faceModel: "",
+        faceParam: "",
+        lightModel: "",
+        lightParam: "",
+        emotionModel: "",
+        emotionParam: "",
+        faceRegModel: "",
+        faceRegParam: "",
+        faceDeafModel: "",
+        faceDeafParam: "",
+        deafModel: "",
+        deafParam: "",
+        moneyModel: '',
+        moneyParam: '',
         doorModel: 'assets/yolo/door.bin',
         doorParam: 'assets/yolo/door.param');
 
@@ -73,6 +74,60 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
     await flutterTts.setLanguage(lang); // Chọn tiếng Việt
     await flutterTts.setSpeechRate(0.6); // Tốc độ nói
     await flutterTts.setPitch(1.0); // Cao độ
+  }
+
+  Future<void> detectMoney(CameraImage cameraImage) async {
+    final completer = Completer<void>();
+    switch (cameraImage.format.group) {
+      case ImageFormatGroup.unknown:
+      case ImageFormatGroup.jpeg:
+        log('not support format');
+        return;
+      case ImageFormatGroup.yuv420:
+        state = nguoiKhuyetTatSDK
+            .detectMoneyYUV420(
+              y: cameraImage.planes[0].bytes,
+              u: cameraImage.planes[1].bytes,
+              v: cameraImage.planes[2].bytes,
+              height: cameraImage.height,
+              deviceOrientationType:
+                  ref.read(moneyCameraController).deviceOrientationType,
+              sensorOrientation:
+                  ref.read(moneyCameraController).sensorOrientation,
+              onDecodeImage: (image) {
+                ref.read(previewImage.notifier).state = image;
+                completer.complete();
+              },
+            )
+            .result;
+        String flash = nguoiKhuyetTatSDK.detectLightYUV420(
+          y: cameraImage.planes[0].bytes,
+          u: cameraImage.planes[1].bytes,
+          v: cameraImage.planes[2].bytes,
+          height: cameraImage.height,
+          deviceOrientationType:
+              ref.read(moneyCameraController).deviceOrientationType,
+          sensorOrientation: ref.read(moneyCameraController).sensorOrientation,
+        );
+        if (flash == 'bright') {
+          ref.read(moneyCameraController).toggleFlash('bright');
+        } else {
+          ref.read(moneyCameraController).toggleFlash('dark');
+        }
+
+        if (state.isNotEmpty) {
+          YoloResult obj = state.first;
+          print("detect object ${obj.toString()}");
+          String name = labels[obj.label];
+          _speak(name); // Gọi đọc tên đối tượng
+        }
+        break;
+      case ImageFormatGroup.nv21:
+        break;
+      case ImageFormatGroup.bgra8888:
+        break;
+    }
+    return completer.future;
   }
 
   Future<void> detectObject(CameraImage cameraImage) async {
@@ -113,7 +168,6 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
         } else {
           ref.read(blindCameraController).toggleFlash('dark');
         }
-
         if (state.isNotEmpty) {
           YoloResult obj = state.first;
           print(obj.toString());
@@ -132,8 +186,8 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
                 Common.xywhToCenter(obj.x, obj.y, width, height);
             double centerX = position[0];
             double centerY = position[1];
-            String content =
-                _getContentSpeaking(name, centerX, centerY, distance);
+            String content = _getContentSpeaking(
+                name, centerX, centerY, distance, width, height);
             _speak(content);
           } else {
             _speak(name); // Gọi đọc tên đối tượng
@@ -148,10 +202,8 @@ class ObjectDetectionController extends StateNotifier<List<YoloResult>> {
     return completer.future;
   }
 
-  String _getContentSpeaking(
-      String name, double centerX, double centerY, double distance) {
-    int imageWidth = 720;
-    int imageHeight = 1280;
+  String _getContentSpeaking(String name, double centerX, double centerY,
+      double distance, double imageWidth, double imageHeight) {
     int gridCols = 3;
     int gridRows = 3;
 

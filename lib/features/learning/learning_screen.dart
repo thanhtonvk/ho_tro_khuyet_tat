@@ -7,6 +7,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 
 class LearningScreen extends StatefulWidget {
   const LearningScreen({super.key, required this.title});
+
   final String title;
 
   @override
@@ -27,7 +28,8 @@ class _LearningScreenState extends State<LearningScreen> {
   @override
   void initState() {
     super.initState();
-    _generateQuestionsAndSetState(MAX_QUESTIONS); // Generate questions and rebuild UI
+    _generateQuestionsAndSetState(
+        MAX_QUESTIONS); // Generate questions and rebuild UI
     _initSpeechToText();
   }
 
@@ -318,47 +320,109 @@ class _LearningScreenState extends State<LearningScreen> {
   Map<int, Map<String, dynamic>> generateQuestions(int totalQuestions) {
     final Random random = Random();
     final Map<int, Map<String, dynamic>> questionMap = {};
-    final Set<int> usedResults = {};
+    final List<String> subjects = [
+      'Toán',
+      'Lý',
+      'Hóa',
+      'Sinh',
+      'Sử',
+      'Địa',
+      'Văn'
+    ];
 
     for (int i = 1; i <= totalQuestions; i++) {
-      int num1, num2, result;
+      String subject = subjects[random.nextInt(subjects.length)];
+      String question = '';
+      Map<String, dynamic> options = {};
+      String correctOption = '';
 
-      do {
-        num1 = random.nextInt(20) + 1;
-        num2 = random.nextInt(20) + 1;
-        result = num1 + num2;
-      } while (usedResults.contains(result));
+      switch (subject) {
+        case 'Toán':
+          int num1 = random.nextInt(20) + 1;
+          int num2 = random.nextInt(20) + 1;
+          int result = num1 + num2;
+          List<int> choices = [result];
+          while (choices.length < 4) {
+            int fakeAnswer = result + random.nextInt(10) - 5;
+            if (fakeAnswer != result &&
+                !choices.contains(fakeAnswer) &&
+                fakeAnswer > 0) {
+              choices.add(fakeAnswer);
+            }
+          }
+          choices.shuffle();
+          correctOption = String.fromCharCode(65 + choices.indexOf(result));
+          options = {
+            'A': choices[0],
+            'B': choices[1],
+            'C': choices[2],
+            'D': choices[3],
+          };
+          question = '$num1 + $num2 = ?';
+          break;
 
-      usedResults.add(result);
+        case 'Lý':
+          question = 'Đơn vị của lực trong hệ SI là gì?';
+          options = {'A': 'Newton', 'B': 'Joule', 'C': 'Watt', 'D': 'Pascal'};
+          correctOption = 'A';
+          break;
 
-      // Tạo đáp án ngẫu nhiên
-      List<int> options = [result];
-      while (options.length < 4) {
-        int fakeAnswer = result + random.nextInt(10);
-        if (fakeAnswer != result &&
-            fakeAnswer > 0 &&
-            !options.contains(fakeAnswer)) {
-          options.add(fakeAnswer);
-        }
+        case 'Hóa':
+          question = 'Nguyên tố nào có số hiệu nguyên tử là 8?';
+          options = {'A': 'Oxi', 'B': 'Cacbon', 'C': 'Hydro', 'D': 'Nitơ'};
+          correctOption = 'A';
+          break;
+
+        case 'Sinh':
+          question = 'Đơn vị cơ bản của sự sống là gì?';
+          options = {
+            'A': 'Tế bào',
+            'B': 'Nguyên tử',
+            'C': 'Phân tử',
+            'D': 'Mô'
+          };
+          correctOption = 'A';
+          break;
+
+        case 'Sử':
+          question =
+              'Năm 1945, sự kiện lịch sử quan trọng nào đã diễn ra ở Việt Nam?';
+          options = {
+            'A': 'Cách mạng tháng Tám',
+            'B': 'Chiến tranh Đông Dương',
+            'C': 'Hiệp định Paris',
+            'D': 'Cách mạng công nghiệp'
+          };
+          correctOption = 'A';
+          break;
+
+        case 'Địa':
+          question = 'Châu lục nào lớn nhất trên Trái Đất?';
+          options = {
+            'A': 'Châu Á',
+            'B': 'Châu Âu',
+            'C': 'Châu Mỹ',
+            'D': 'Châu Phi'
+          };
+          correctOption = 'A';
+          break;
+
+        case 'Văn':
+          question = 'Tác giả của truyện "Chí Phèo" là ai?';
+          options = {
+            'A': 'Nam Cao',
+            'B': 'Ngô Tất Tố',
+            'C': 'Tô Hoài',
+            'D': 'Nguyễn Du'
+          };
+          correctOption = 'A';
+          break;
       }
 
-      // Trộn đáp án
-      options.shuffle();
-
-      // Xác định đáp án đúng
-      String correctOption =
-          String.fromCharCode(65 + options.indexOf(result)); // A, B, C, D
-
-      // Thêm câu hỏi vào map
       questionMap[i] = {
-        'question': '$num1 + $num2',
-        'options': {
-          'A': options[0],
-          'B': options[1],
-          'C': options[2],
-          'D': options[3],
-        },
-        'result': num1 + num2,
+        'subject': subject,
+        'question': question,
+        'options': options,
         'answer': correctOption
       };
     }
@@ -386,16 +450,17 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   void _listenToSpeech() async {
-    await speechToText.listen(onResult: (result) {
-      if (result.finalResult) {
-        if (int.tryParse(result.recognizedWords) != null) {
-          print('result speech: ${result.recognizedWords}');
-          handleAnswer(result.recognizedWords.trim());
+    await speechToText.listen(
+      onResult: (result) {
+        if (result.finalResult) {
+          if (int.tryParse(result.recognizedWords) != null) {
+            print('result speech: ${result.recognizedWords}');
+            handleAnswer(result.recognizedWords.trim());
+          }
         }
-      }
-    },
-    listenFor: Duration(seconds: 30),
-    localeId: 'vi-VN',
+      },
+      listenFor: Duration(seconds: 30),
+      localeId: 'vi-VN',
     );
   }
 
@@ -404,14 +469,15 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   void showDialogResult() async {
-    String text = 'Bạn đã hoànt hành bài học. Bạn đã trả lời đúng $countCorrectAnswer câu hỏi. Trả lời sai ${MAX_QUESTIONS - countCorrectAnswer} câu hỏi. Điểm ${countCorrectAnswer*2}';
+    String text =
+        'Bạn đã hoànt hành bài học. Bạn đã trả lời đúng $countCorrectAnswer câu hỏi. Trả lời sai ${MAX_QUESTIONS - countCorrectAnswer} câu hỏi. Điểm ${countCorrectAnswer * 2}';
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Hoàn thành bài kiểm tra'),
         content: Text(
           text,
-            ),
+        ),
       ),
     );
     await _readText(text);

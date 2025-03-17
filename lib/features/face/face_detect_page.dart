@@ -8,7 +8,9 @@ import 'package:nguoi_khuyet_tat/providers/face_detection/face_detect_controller
 import 'face_manager_page.dart';
 
 class FaceDetectPage extends HookConsumerWidget {
-  const FaceDetectPage({super.key});
+  int camera = 0;
+
+  FaceDetectPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,31 +55,68 @@ class FaceDetectPage extends HookConsumerWidget {
             },
           ),
         ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.blueAccent, Colors.white],
-            ),
-          ),
-          child: Center(
-            child: previewImage == null
-                ? const CircularProgressIndicator()
-                : ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: SizedBox(
-                      width: previewImage.width.toDouble(),
-                      height: previewImage.height.toDouble(),
-                      child: CustomPaint(
-                        painter: FaceResultPainter(
-                          image: previewImage,
-                          results: ref.watch(faceDetectController),
+        body: Stack(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.blueAccent, Colors.white],
+                ),
+              ),
+              child: Center(
+                child: previewImage == null
+                    ? const CircularProgressIndicator()
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: SizedBox.expand(
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                              width: previewImage.width.toDouble(),
+                              height: previewImage.height.toDouble(),
+                              child: CustomPaint(
+                                painter: FaceResultPainter(
+                                    image: previewImage,
+                                    results: ref.watch(faceDetectController)),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
+              ),
+            ),
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    if (camera == 0) {
+                      ref.read(faceCameraController).startImageStream(1);
+                      camera = 1;
+                    } else {
+                      ref.read(faceCameraController).startImageStream(0);
+                      camera = 0;
+                    }
+                  },
+                  icon: const Icon(Icons.cameraswitch),
+                  label: const Text("Đổi camera"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
-          ),
+                ),
+              ),
+            ),
+          ],
         ),
         resizeToAvoidBottomInset: true,
         extendBodyBehindAppBar: true,

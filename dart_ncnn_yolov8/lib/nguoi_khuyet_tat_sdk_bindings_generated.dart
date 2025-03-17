@@ -378,4 +378,26 @@ class NguoiKhuyetTatSDKBindings {
   late final _lightDetection = _lightDetectionPtr.asFunction<
       ffi.Pointer<ffi.Char> Function(
           ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
+
+  ffi.Pointer<ffi.Char> detectAnyObject(
+    ffi.Pointer<ffi.UnsignedChar> pixel,
+    int pixelType,
+    int width,
+    int height,
+  ) {
+    return _detectAnyObject(
+      pixel,
+      pixelType,
+      width,
+      height,
+    );
+  }
+
+  late final _detectAnyObjectPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Char> Function(ffi.Pointer<ffi.UnsignedChar>, ffi.Int,
+              ffi.Int, ffi.Int)>>('detectAnyObject');
+  late final _detectAnyObject = _detectAnyObjectPtr.asFunction<
+      ffi.Pointer<ffi.Char> Function(
+          ffi.Pointer<ffi.UnsignedChar>, int, int, int)>();
 }

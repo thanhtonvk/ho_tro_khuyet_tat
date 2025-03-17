@@ -63,6 +63,9 @@ predictDeaf(const unsigned char *pixels, int pixelType, int width, int height);
 FFI_PLUGIN_EXPORT char *
 lightDetection(const unsigned char *pixels, int pixelType, int width, int height);
 
+FFI_PLUGIN_EXPORT char *detectAnyObject(
+        const unsigned char *pixel, int pixelType, int width, int height
+);
 
 #ifdef __cplusplus
 }

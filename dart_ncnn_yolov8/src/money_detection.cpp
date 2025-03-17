@@ -234,6 +234,7 @@ MoneyDetection::detect(const unsigned char *pixels, int pixelType, std::vector <
     // apply nms with nms_threshold
     std::vector<int> picked;
     nms_sorted_bboxes(objects, picked, nms_threshold);
+    NCNN_LOGE("in object %zu", objects.size());
 
     int count = picked.size();
 

@@ -25,13 +25,12 @@ class GiaoTiepTuCameraController {
   bool _isProcessing = false;
 
   Future<void> startImageStream(int cameraIndex) async {
-    await ref.read(deafDetectionController.notifier).initialize();
-
+    await ref.read(deafDetectionController.notifier).initializeController();
     final camera = (await availableCameras())[cameraIndex];
 
     _cameraController = CameraController(
       camera,
-      ResolutionPreset.high,
+      ResolutionPreset.low,
       enableAudio: false,
     );
 

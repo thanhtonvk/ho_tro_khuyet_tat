@@ -15,7 +15,7 @@ public:
 
     int detect(const unsigned char *pixels, int pixelType, std::vector <Object> &objects,
                int width,
-               int height, float prob_threshold = 0.5f, float nms_threshold = 0.3f);
+               int height, float prob_threshold = 0.3f, float nms_threshold = 0.3f);
 
 
 private:

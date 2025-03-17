@@ -5,6 +5,7 @@ import 'package:nguoi_khuyet_tat/providers/blind_camera_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/object_detection/object_detection_controller.dart';
 
 import '../../providers/ncnn_yolo_options.dart';
+import 'calib_page.dart';
 
 class DoDuongPage extends HookConsumerWidget {
   const DoDuongPage({super.key});
@@ -77,7 +78,8 @@ class DoDuongPage extends HookConsumerWidget {
               right: 20,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // TODO: Thêm chức năng căn chỉnh khoảng cách tại đây
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const CalibPage()));
                 },
                 icon: const Icon(Icons.straighten, size: 28),
                 label: const Text(

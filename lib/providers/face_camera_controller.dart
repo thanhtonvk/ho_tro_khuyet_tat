@@ -71,7 +71,7 @@ class FaceCameraController {
 
     _cameraController = CameraController(
       camera,
-      ResolutionPreset.high,
+      ResolutionPreset.low,
       enableAudio: false,
     );
 
@@ -108,7 +108,7 @@ class FaceCameraController {
 
       _cameraController = CameraController(
         camera,
-        ResolutionPreset.high,
+        ResolutionPreset.low,
         enableAudio: false,
       );
     }

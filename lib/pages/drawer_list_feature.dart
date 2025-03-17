@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:nguoi_khuyet_tat/features/chat/room_page.dart';
+import 'package:nguoi_khuyet_tat/features/chatbot/dialog_chatbot.dart';
+import 'package:nguoi_khuyet_tat/features/find_way/any_object_page.dart';
 import 'package:nguoi_khuyet_tat/features/learning/learning_screen.dart';
-import 'package:nguoi_khuyet_tat/features/person_normal/person_normal_screen.dart';
 import 'package:nguoi_khuyet_tat/features/read_text/read_text_screen.dart';
 import 'package:nguoi_khuyet_tat/providers/face_camera_controller.dart';
-import 'package:nguoi_khuyet_tat/providers/giao_tiep_cau_camera_controller.dart';
-import 'package:nguoi_khuyet_tat/providers/giao_tiep_tu_camera_controller.dart';
-import '../features/deaf/giao_tiep_cau_page.dart';
-import '../features/deaf/giao_tiep_tu_page.dart';
+import 'package:nguoi_khuyet_tat/providers/find_way_camera_controller.dart';
 import '../features/dialog_micro/dialog_micro.dart';
 import '../features/face/face_detect_page.dart';
 import '../features/find_way/do_duong_page.dart';
+import '../features/find_way/money_page.dart';
 import '../providers/blind_camera_controller.dart';
+import '../providers/money_camera_controller.dart';
 
 class DrawerListFeatureWidget extends HookConsumerWidget {
   DrawerListFeatureWidget({super.key});
@@ -51,14 +52,18 @@ class DrawerListFeatureWidget extends HookConsumerWidget {
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundImage: AssetImage("assets/images/ic_person.png"),
+                Icon(
+                  Icons.visibility_off, // Icon đại diện cho người mù
+                  size: 80,
+                  color: Colors.white,
                 ),
                 SizedBox(height: 10),
                 Text(
-                  "Ứng dụng hỗ trợ",
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  "Ứng dụng hỗ trợ khiếm thị",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -69,14 +74,35 @@ class DrawerListFeatureWidget extends HookConsumerWidget {
             child: ListView(
               children: [
                 DrawerItem(
+                  title: "Tìm đồ vật",
+                  icon: Icons.accessibility_new,
+                  onTap: () {
+                    _speak("Mở chức năng tìm đồ vật");
+                    ref.read(blindCameraController).startImageStream(0);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const DoDuongPage()));
+                  },
+                ),
+                DrawerItem(
                   title: "Dò đường",
                   icon: Icons.map,
                   onTap: () {
                     _speak("Mở chức năng dò đường");
-                    flutterTts.setCompletionHandler(() {
-                      ref.read(blindCameraController).startImageStream(0);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const DoDuongPage()));
-                    });
+                    ref.read(findWayCameraController).startImageStream(0);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const AnyObjectPage()));
+                  },
+                ),
+                DrawerItem(
+                  title: "Nhận diện tiền",
+                  icon: Icons.map,
+                  onTap: () {
+                    _speak("Mở chức năng nhận diện tiền");
+                    ref.read(moneyCameraController).startImageStream(0);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const MoneyPage()));
                   },
                 ),
                 DrawerItem(
@@ -84,10 +110,9 @@ class DrawerListFeatureWidget extends HookConsumerWidget {
                   icon: Icons.person,
                   onTap: () {
                     _speak("Mở chức năng nhận diện người thân");
-                    flutterTts.setCompletionHandler(() {
-                      ref.read(faceCameraController).startImageStream(0);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const FaceDetectPage()));
-                    });
+                    ref.read(faceCameraController).startImageStream(0);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => FaceDetectPage()));
                   },
                 ),
                 DrawerItem(
@@ -95,9 +120,10 @@ class DrawerListFeatureWidget extends HookConsumerWidget {
                   icon: Icons.dialpad,
                   onTap: () {
                     _speak("Hãy đọc số điện thoại");
-                    flutterTts.setCompletionHandler(() {
-                      showDialog(context: context, builder: (_) => const DialogMicro(isCallContact: false));
-                    });
+                    showDialog(
+                        context: context,
+                        builder: (_) =>
+                            const DialogMicro(isCallContact: false));
                   },
                 ),
                 DrawerItem(
@@ -105,19 +131,31 @@ class DrawerListFeatureWidget extends HookConsumerWidget {
                   icon: Icons.contacts,
                   onTap: () {
                     _speak("Hãy đọc tên trong danh bạ");
-                    flutterTts.setCompletionHandler(() {
-                      showDialog(context: context, builder: (_) => const DialogMicro(isCallContact: true));
-                    });
+                    showDialog(
+                        context: context,
+                        builder: (_) => const DialogMicro(isCallContact: true));
                   },
                 ),
                 DrawerItem(
                   title: "Đọc chữ",
-                  icon: Icons.volume_up,
+                  icon: Icons.voice_chat,
                   onTap: () {
                     _speak("Mở chức năng đọc chữ");
-                    flutterTts.setCompletionHandler(() {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const ReadTextScreen()));
-                    });
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ReadTextScreen()));
+                  },
+                ),
+
+                DrawerItem(
+                  title: "Chatbot",
+                  icon: Icons.auto_awesome_mosaic_outlined,
+                  onTap: () {
+                    _speak("Mở chức năng chatbot");
+                    showDialog(
+                        context: context,
+                        builder: (_) => const DialogChatBot());
                   },
                 ),
                 DrawerItem(
@@ -130,9 +168,11 @@ class DrawerListFeatureWidget extends HookConsumerWidget {
                   icon: Icons.school,
                   onTap: () {
                     _speak("Mở chức năng học tập");
-                    flutterTts.setCompletionHandler(() {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LearningScreen(title: "Học tập")));
-                    });
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const LearningScreen(title: "Học tập")));
                   },
                 ),
                 DrawerItem(
@@ -140,41 +180,11 @@ class DrawerListFeatureWidget extends HookConsumerWidget {
                   icon: Icons.assessment,
                   onTap: () {
                     _speak("Mở chức năng thi online");
-                    flutterTts.setCompletionHandler(() {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LearningScreen(title: "Thi online")));
-                    });
-                  },
-                ),
-                DrawerItem(
-                  title: "Giao tiếp từ",
-                  icon: Icons.translate,
-                  onTap: () {
-                    _speak("Giao tiếp từ");
-                    flutterTts.setCompletionHandler(() {
-                      ref.read(giaoTiepTuCameraController).startImageStream(1);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const GiaoTiepTuPage()));
-                    });
-                  },
-                ),
-                DrawerItem(
-                  title: "Giao tiếp câu",
-                  icon: Icons.textsms,
-                  onTap: () {
-                    _speak("Giao tiếp câu");
-                    flutterTts.setCompletionHandler(() {
-                      ref.read(giaoTiepCauCameraController).startImageStream(1);
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const GiaoTiepCauPage()));
-                    });
-                  },
-                ),
-                DrawerItem(
-                  title: "Người bình thường ",
-                  icon: Icons.textsms,
-                  onTap: () {
-                    _speak("Người bình thường");
-                    flutterTts.setCompletionHandler(() {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const PersonNormalScreen()));
-                    });
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const LearningScreen(title: "Thi online")));
                   },
                 ),
               ],
@@ -192,14 +202,20 @@ class DrawerItem extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const DrawerItem({super.key, required this.title, required this.icon, required this.onTap});
+  const DrawerItem(
+      {super.key,
+      required this.title,
+      required this.icon,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: Colors.blue),
-      title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      title: Text(title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+      trailing:
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       tileColor: Colors.grey.shade100,

@@ -13,7 +13,6 @@ class GiaoTiepTuPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final previewImage = ref.watch(DeafDetectionController.previewImage);
-
     void showBackDialog() {
       showDialog<void>(
         context: context,
@@ -84,7 +83,6 @@ class GiaoTiepTuPage extends HookConsumerWidget {
             if (previewImage == null) {
               return const Center(child: CircularProgressIndicator());
             }
-
             return Stack(
               children: [
                 Center(
@@ -98,7 +96,7 @@ class GiaoTiepTuPage extends HookConsumerWidget {
                           painter: YoloResultPainter(
                             image: previewImage,
                             results: ref.watch(deafDetectionController),
-                            labels: labelsDeaf,
+                            labels: ref.watch(labelsDeafProvider),
                           ),
                         ),
                       ),
@@ -106,7 +104,7 @@ class GiaoTiepTuPage extends HookConsumerWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: 20,
+                  bottom: 80,
                   left: 20,
                   right: 20,
                   child: ValueListenableBuilder<String>(
@@ -140,6 +138,84 @@ class GiaoTiepTuPage extends HookConsumerWidget {
                         ),
                       );
                     },
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  left: 20,
+                  right: 20,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafVI;
+                          ref.read(languageProvider.notifier).state = "vi-VN";
+                        },
+                        label: const Text("Việt"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafSanDiu;
+                          ref.read(languageProvider.notifier).state = "vi-VN";
+                        },
+                        label: const Text("Sán dìu"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafEN;
+                          ref.read(languageProvider.notifier).state = "en-US";
+                        },
+                        label: const Text("Anh"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafCN;
+                          ref.read(languageProvider.notifier).state = "zh-CN";
+                        },
+                        label: const Text("Trung"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

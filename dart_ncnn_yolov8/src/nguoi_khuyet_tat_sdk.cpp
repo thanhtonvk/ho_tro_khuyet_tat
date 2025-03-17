@@ -10,6 +10,7 @@
 #include "scrfd.h"
 #include "scrfd_deaf.h"
 #include "door_detection.h"
+#include "any_object_detection.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -28,6 +29,7 @@ static SCRFD_DEAF *faceDeafDetection = 0;
 static DeafDetection *deafDetection = 0;
 static MoneyDetection *moneyDetection = 0;
 static DoorDetection *doorDetection = 0;
+static AnyObjectDetection *anyObjectDetection = 0;
 static ncnn::Mutex lock;
 
 
@@ -248,6 +250,8 @@ load(int deaf, int blind,
             if (!doorDetection)
                 doorDetection = new DoorDetection();
             doorDetection->load(640, norm_vals[0], door_model, door_param);
+            if (!anyObjectDetection)
+                anyObjectDetection = new AnyObjectDetection();
 
         }
     }
@@ -266,6 +270,7 @@ FFI_PLUGIN_EXPORT void unLoad() {
         delete deafDetection;
         delete moneyDetection;
         delete doorDetection;
+        delete anyObjectDetection;
         objectDetection = 0;
         faceDetection = 0;
         lightTraffic = 0;
@@ -275,6 +280,7 @@ FFI_PLUGIN_EXPORT void unLoad() {
         deafDetection = 0;
         moneyDetection = 0;
         doorDetection = 0;
+        anyObjectDetection = 0;
     }
 }
 
@@ -335,24 +341,32 @@ FFI_PLUGIN_EXPORT char *
 detectMoney(const unsigned char *pixels, int pixelType, int width, int height) {
     ncnn::MutexLockGuard g(lock);
     if (moneyDetection) {
-        moneyObjects.clear();
-        moneyDetection->detect(pixels, pixelType, moneyObjects, width, height);
+        objects.clear();
+        moneyDetection->detect(pixels, pixelType, objects, width, height);
     }
-    return parseResultsObjects(moneyObjects);
+    return parseResultsObjects(objects);
 }
 
 FFI_PLUGIN_EXPORT char *
 detectObject(const unsigned char *pixels, int pixelType, int width, int height) {
     ncnn::MutexLockGuard g(lock);
-    if (objectDetection && moneyDetection) {
+    if (objectDetection) {
         objects.clear();
-        moneyDetection->detect(pixels, pixelType, objects, width, height);
+        doorDetection->detect(pixels, pixelType, objects, width, height);
         if (objects.empty()) {
-            doorDetection->detect(pixels, pixelType, objects, width, height);
-            if (objects.empty()) {
-                objectDetection->detect(pixels, pixelType, objects, width, height);
-            }
+            objectDetection->detect(pixels, pixelType, objects, width, height);
         }
+
+    }
+    return parseResultsObjects(objects);
+}
+
+FFI_PLUGIN_EXPORT char *
+detectAnyObject(const unsigned char *pixels, int pixelType, int width, int height) {
+    ncnn::MutexLockGuard g(lock);
+    if (anyObjectDetection) {
+        objects.clear();
+        anyObjectDetection->detect(pixels, pixelType, objects, width, height);
     }
     return parseResultsObjects(objects);
 }
@@ -399,7 +413,10 @@ predictDeaf(const unsigned char *pixels, int pixelType, int width, int height) {
                 if (!scoreEmotions.empty()) {
                     int idx = getMaxIndex(scoreEmotions);
                     tempObjects[indexObject].prob = scoreEmotions[idx];
-                    tempObjects[indexObject].label = idx + 19;
+                    tempObjects[indexObject].label = idx + 39;
+                } else {
+                    tempObjects[indexObject].prob = 1.0;
+                    tempObjects[indexObject].label = 22;
                 }
             }
             deafObjects = tempObjects;
@@ -432,3 +449,4 @@ lightDetection(const unsigned char *pixels, int pixelType, int width, int height
     // Trả về chuỗi động
     return strdup((meanBrightness >= 80) ? "bright" : "dark");
 }
+

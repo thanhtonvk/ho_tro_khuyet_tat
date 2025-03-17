@@ -1,10 +1,8 @@
 import 'package:dart_ncnn_yolov8/dart_ncnn_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:nguoi_khuyet_tat/providers/deaf_detection/deaf_detection_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/deaf_detection/deaf_merge_detection_controller.dart';
 import 'package:nguoi_khuyet_tat/providers/giao_tiep_cau_camera_controller.dart';
-
 import '../../providers/ncnn_yolo_options.dart';
 import '../../utils/common.dart';
 
@@ -14,7 +12,6 @@ class GiaoTiepCauPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final previewImage = ref.watch(DeafMergeDetectionController.previewImage);
-
     void showBackDialog() {
       showDialog<void>(
         context: context,
@@ -23,7 +20,10 @@ class GiaoTiepCauPage extends HookConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-            title: const Text('Thoát', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text(
+              'Thoát',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             content: const Text('Bạn có muốn rời đi không？'),
             actionsAlignment: MainAxisAlignment.spaceBetween,
             actions: <Widget>[
@@ -67,11 +67,6 @@ class GiaoTiepCauPage extends HookConsumerWidget {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: showBackDialog,
           ),
-          title: const Text(
-            "Giao Tiếp Câu",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          centerTitle: true,
           flexibleSpace: Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -87,7 +82,6 @@ class GiaoTiepCauPage extends HookConsumerWidget {
             if (previewImage == null) {
               return const Center(child: CircularProgressIndicator());
             }
-
             return Stack(
               children: [
                 Center(
@@ -101,7 +95,7 @@ class GiaoTiepCauPage extends HookConsumerWidget {
                           painter: YoloResultPainter(
                             image: previewImage,
                             results: ref.watch(deafMergeDetectionController),
-                            labels: labelsDeaf,
+                            labels: ref.watch(labelsDeafProvider),
                           ),
                         ),
                       ),
@@ -109,7 +103,7 @@ class GiaoTiepCauPage extends HookConsumerWidget {
                   ),
                 ),
                 Positioned(
-                  bottom: 20,
+                  bottom: 80,
                   left: 20,
                   right: 20,
                   child: ValueListenableBuilder<String>(
@@ -143,6 +137,84 @@ class GiaoTiepCauPage extends HookConsumerWidget {
                         ),
                       );
                     },
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  left: 20,
+                  right: 20,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafVI;
+                          ref.read(languageProvider.notifier).state = "vi-VN";
+                        },
+                        label: const Text("Việt"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafSanDiu;
+                          ref.read(languageProvider.notifier).state = "vi-VN";
+                        },
+                        label: const Text("Sán dìu"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafEN;
+                          ref.read(languageProvider.notifier).state = "en-US";
+                        },
+                        label: const Text("Anh"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ref.read(labelsDeafProvider.notifier).state =
+                              labelsDeafCN;
+                          ref.read(languageProvider.notifier).state = "zh-CN";
+                        },
+                        label: const Text("Trung"),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 14, horizontal: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
