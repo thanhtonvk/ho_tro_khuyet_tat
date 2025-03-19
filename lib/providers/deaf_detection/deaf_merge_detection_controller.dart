@@ -56,26 +56,27 @@ class DeafMergeDetectionController extends StateNotifier<List<YoloResult>> {
 
   Future<void> initializeSDK() async {
     await nguoiKhuyetTatSDK.load(
-        isBlind: false,
-        isDeaf: true,
-        objectModel: '',
-        objectParam: '',
-        faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
-        faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
-        lightModel: "",
-        lightParam: "",
-        emotionModel: "assets/yolo/model.bin",
-        emotionParam: "assets/yolo/model.param",
-        faceRegModel: '',
-        faceRegParam: '',
-        faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
-        faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
-        deafModel: 'assets/yolo/best_cu_chi_v9.bin',
-        deafParam: 'assets/yolo/best_cu_chi_v9.param',
-        moneyModel: '',
-        moneyParam: '',
-        doorModel: '',
-        doorParam: '');
+      isBlind: false,
+      isDeaf: true,
+      objectModel: '',
+      objectParam: '',
+      faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+      faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+      emotionModel: "assets/yolo/model.bin",
+      emotionParam: "assets/yolo/model.param",
+      faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
+      faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
+      deafModel: 'assets/yolo/cu_chi_tuyen_quang1.bin',
+      deafParam: 'assets/yolo/cu_chi_tuyen_quang1.param',
+      lightModel: '',
+      lightParam: '',
+      faceRegModel: '',
+      faceRegParam: '',
+      moneyModel: '',
+      moneyParam: '',
+      doorModel: '',
+      doorParam: '',
+    );
   }
 
   /// **Phát âm thanh nếu không bị gián đoạn**

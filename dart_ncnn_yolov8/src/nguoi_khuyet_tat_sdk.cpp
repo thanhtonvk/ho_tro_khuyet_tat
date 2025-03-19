@@ -11,6 +11,7 @@
 #include "scrfd_deaf.h"
 #include "door_detection.h"
 #include "any_object_detection.h"
+#include "deaf_detection_v2.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -27,6 +28,7 @@ static EmotionRecognition *emotionRecognition = 0;
 static FaceEmb *faceRecognition = 0;
 static SCRFD_DEAF *faceDeafDetection = 0;
 static DeafDetection *deafDetection = 0;
+static DeafDetectionV2 *deafDetectionV2 = 0;
 static MoneyDetection *moneyDetection = 0;
 static DoorDetection *doorDetection = 0;
 static AnyObjectDetection *anyObjectDetection = 0;
@@ -177,7 +179,8 @@ load(int deaf, int blind,
      char *face_deaf_model, char *face_deaf_param,
      char *deaf_model, char *deaf_param,
      char *money_model, char *money_param,
-     char *door_model, char *door_param
+     char *door_model, char *door_param,
+     char *deaf_model_v2, char *deaf_param_v2
 ) {
     {
         ncnn::MutexLockGuard g(lock);
@@ -190,6 +193,7 @@ load(int deaf, int blind,
         delete deafDetection;
         delete moneyDetection;
         delete doorDetection;
+        delete deafDetectionV2;
         objectDetection = 0;
         faceDetection = 0;
         lightTraffic = 0;
@@ -199,6 +203,7 @@ load(int deaf, int blind,
         deafDetection = 0;
         moneyDetection = 0;
         doorDetection = 0;
+        deafDetectionV2 = 0;
 
         const float mean_vals[][3] =
                 {
@@ -224,6 +229,10 @@ load(int deaf, int blind,
             if (!deafDetection)
                 deafDetection = new DeafDetection();
             deafDetection->load(320, norm_vals[0], deaf_model, deaf_param);
+
+            if (!deafDetectionV2)
+                deafDetectionV2 = new DeafDetectionV2();
+            deafDetectionV2->load(320, norm_vals[0], deaf_model_v2, deaf_param_v2);
         } else {
 
 //            if (!lightTraffic) {
@@ -271,6 +280,7 @@ FFI_PLUGIN_EXPORT void unLoad() {
         delete moneyDetection;
         delete doorDetection;
         delete anyObjectDetection;
+        delete deafDetectionV2;
         objectDetection = 0;
         faceDetection = 0;
         lightTraffic = 0;
@@ -281,6 +291,7 @@ FFI_PLUGIN_EXPORT void unLoad() {
         moneyDetection = 0;
         doorDetection = 0;
         anyObjectDetection = 0;
+        deafDetectionV2 = 0;
     }
 }
 
@@ -396,11 +407,16 @@ predictDeaf(const unsigned char *pixels, int pixelType, int width, int height) {
         faceObjects.clear();
         deafDetection->detect(pixels, pixelType, deafObjects, width, height);
         faceDetection->detect(pixels, pixelType, faceObjects, width, height);
-
+        int value = 0;
+        if (deafObjects.empty()) {
+            deafDetectionV2->detect(pixels, pixelType, deafObjects, width, height);
+            value = 19;
+        }
         if (!faceObjects.empty()) {
             std::vector <Object> tempObjects;
             tempObjects.resize(faceObjects.size() + deafObjects.size());
             for (int i = 0; i < deafObjects.size(); ++i) {
+                deafObjects[i].label += value;
                 tempObjects[i] = deafObjects[i];
             }
             for (int i = 0; i < faceObjects.size(); ++i) {

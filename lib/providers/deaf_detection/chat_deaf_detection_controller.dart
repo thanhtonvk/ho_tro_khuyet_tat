@@ -66,8 +66,8 @@ class ChatDeafDetectionController extends StateNotifier<List<YoloResult>> {
       emotionParam: "assets/yolo/model.param",
       faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
       faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
-      deafModel: 'assets/yolo/best_cu_chi_v9.bin',
-      deafParam: 'assets/yolo/best_cu_chi_v9.param', lightModel: '', lightParam: '', faceRegModel: '', faceRegParam: '', moneyModel: '', moneyParam: '', doorModel: '', doorParam: '',
+      deafModel: 'assets/yolo/cu_chi_tuyen_quang1.bin',
+      deafParam: 'assets/yolo/cu_chi_tuyen_quang1.param', lightModel: '', lightParam: '', faceRegModel: '', faceRegParam: '', moneyModel: '', moneyParam: '', doorModel: '', doorParam: '',
     );
   }
 
