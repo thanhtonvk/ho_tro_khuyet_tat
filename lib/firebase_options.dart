@@ -50,21 +50,22 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDsIVJ9d1FBeiYPGE3EX2E4Eu-V7C8DPc0',
-    appId: '1:1014607047105:android:153d8590fa64c0e262e740',
-    messagingSenderId: '1014607047105',
-    projectId: 'chatwithfirebase-19579',
-    databaseURL: 'https://chatwithfirebase-19579-default-rtdb.firebaseio.com',
-    storageBucket: 'chatwithfirebase-19579.appspot.com',
+    apiKey: 'AIzaSyDYQFJThZ_NNHuuK--UYq-Tqq9B8J2OL2s',
+    appId: '1:51589792579:android:ba60dcca7dae72045ba5f6',
+    messagingSenderId: '51589792579',
+    projectId: 'quanlyphuongtien-22dd4',
+    databaseURL: 'https://quanlyphuongtien-22dd4-default-rtdb.firebaseio.com',
+    storageBucket: 'quanlyphuongtien-22dd4.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDQ_8WFv8-zFjertnX3w1Ir50tWEgCnabU',
-    appId: '1:1014607047105:ios:0529b13a7ee1733462e740',
-    messagingSenderId: '1014607047105',
-    projectId: 'chatwithfirebase-19579',
-    databaseURL: 'https://chatwithfirebase-19579-default-rtdb.firebaseio.com',
-    storageBucket: 'chatwithfirebase-19579.appspot.com',
+    apiKey: 'AIzaSyAaUbZPy9fLegXrGdIktA-XvoMs_OhSOe0',
+    appId: '1:51589792579:ios:2f6600a86a579a875ba5f6',
+    messagingSenderId: '51589792579',
+    projectId: 'quanlyphuongtien-22dd4',
+    databaseURL: 'https://quanlyphuongtien-22dd4-default-rtdb.firebaseio.com',
+    storageBucket: 'quanlyphuongtien-22dd4.appspot.com',
     iosBundleId: 'com.nguoikhuyettat.nguoiKhuyetTat',
   );
+
 }
