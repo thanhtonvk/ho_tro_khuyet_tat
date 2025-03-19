@@ -36,6 +36,8 @@ class AnyObjectDetectionController extends StateNotifier<List<YoloResult>> {
         lightModel: "",
         lightParam: "",
         emotionModel: "",
+        deafModelV2: '',
+        deafParamv2: '',
         emotionParam: "",
         faceRegModel: "",
         faceRegParam: "",

@@ -33,6 +33,7 @@ add_library(nguoi_khuyet_tat_sdk SHARED
         "face_emb.cpp"
         "door_detection.cpp"
         "any_object_detection.cpp"
+        "deaf_detection_v2.cpp"
 )
 
 

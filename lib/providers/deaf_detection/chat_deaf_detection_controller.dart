@@ -11,12 +11,13 @@ import 'package:nguoi_khuyet_tat/providers/chatCameraController.dart';
 import 'package:nguoi_khuyet_tat/providers/ncnn_yolo_options.dart';
 import 'package:nguoi_khuyet_tat/utils/common.dart';
 
-final labelsChatDeafProvider = StateProvider<List<String>>((ref) => labelsDeafVI);
+final labelsChatDeafProvider =
+    StateProvider<List<String>>((ref) => labelsDeafVI);
 final languageProvider = StateProvider<String>((ref) => 'vi');
 
 final chatDeafDetectionController =
-StateNotifierProvider<ChatDeafDetectionController, List<YoloResult>>(
-      (ref) => ChatDeafDetectionController(ref),
+    StateNotifierProvider<ChatDeafDetectionController, List<YoloResult>>(
+  (ref) => ChatDeafDetectionController(ref),
 );
 
 class ChatDeafDetectionController extends StateNotifier<List<YoloResult>> {
@@ -67,7 +68,17 @@ class ChatDeafDetectionController extends StateNotifier<List<YoloResult>> {
       faceDeafModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
       faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
       deafModel: 'assets/yolo/cu_chi_tuyen_quang1.bin',
-      deafParam: 'assets/yolo/cu_chi_tuyen_quang1.param', lightModel: '', lightParam: '', faceRegModel: '', faceRegParam: '', moneyModel: '', moneyParam: '', doorModel: '', doorParam: '',
+      deafParam: 'assets/yolo/cu_chi_tuyen_quang1.param',
+      deafModelV2: 'assets/yolo/cu_chi_tuyen_quang2.bin',
+      deafParamv2: 'assets/yolo/cu_chi_tuyen_quang2.param',
+      lightModel: '',
+      lightParam: '',
+      faceRegModel: '',
+      faceRegParam: '',
+      moneyModel: '',
+      moneyParam: '',
+      doorModel: '',
+      doorParam: '',
     );
   }
 
@@ -85,9 +96,14 @@ class ChatDeafDetectionController extends StateNotifier<List<YoloResult>> {
   /// **Gửi tin nhắn lên Firebase**
   Future<void> sendMessage(String message) async {
     if (message.trim().isNotEmpty) {
-      String? messageId = database.child("chat_rooms/${Common.roomId.value}/messages").push().key;
+      String? messageId = database
+          .child("chat_rooms/${Common.roomId.value}/messages")
+          .push()
+          .key;
       if (messageId != null) {
-        await database.child("chat_rooms/${Common.roomId.value}/messages/$messageId").set({
+        await database
+            .child("chat_rooms/${Common.roomId.value}/messages/$messageId")
+            .set({
           "sender": Common.userId.value,
           "text": message,
           "timestamp": ServerValue.timestamp,
@@ -107,17 +123,18 @@ class ChatDeafDetectionController extends StateNotifier<List<YoloResult>> {
 
     state = nguoiKhuyetTatSDK
         .detectDeafYUV420(
-      y: cameraImage.planes[0].bytes,
-      u: cameraImage.planes[1].bytes,
-      v: cameraImage.planes[2].bytes,
-      height: cameraImage.height,
-      deviceOrientationType: ref.read(chatCameraController).deviceOrientationType,
-      sensorOrientation: ref.read(chatCameraController).sensorOrientation,
-      onDecodeImage: (image) {
-        ref.read(previewImage.notifier).state = image;
-        completer.complete();
-      },
-    )
+          y: cameraImage.planes[0].bytes,
+          u: cameraImage.planes[1].bytes,
+          v: cameraImage.planes[2].bytes,
+          height: cameraImage.height,
+          deviceOrientationType:
+              ref.read(chatCameraController).deviceOrientationType,
+          sensorOrientation: ref.read(chatCameraController).sensorOrientation,
+          onDecodeImage: (image) {
+            ref.read(previewImage.notifier).state = image;
+            completer.complete();
+          },
+        )
         .result;
 
     final lang = ref.read(languageProvider);

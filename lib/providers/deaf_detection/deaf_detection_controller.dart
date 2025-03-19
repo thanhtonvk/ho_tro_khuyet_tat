@@ -68,6 +68,8 @@ class DeafDetectionController extends StateNotifier<List<YoloResult>> {
       faceDeafParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
       deafModel: 'assets/yolo/cu_chi_tuyen_quang1.bin',
       deafParam: 'assets/yolo/cu_chi_tuyen_quang1.param',
+      deafModelV2: 'assets/yolo/cu_chi_tuyen_quang2.bin',
+      deafParamv2: 'assets/yolo/cu_chi_tuyen_quang2.param',
       lightModel: '',
       lightParam: '',
       faceRegModel: '',

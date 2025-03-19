@@ -47,6 +47,8 @@ class FaceDetectController extends StateNotifier<List<FaceResult>> {
         faceDeafParam: "",
         deafModel: "",
         deafParam: "",
+        deafModelV2: '',
+        deafParamv2: '',
         moneyModel: '',
         moneyParam: '',
         doorModel: '',

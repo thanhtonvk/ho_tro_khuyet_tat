@@ -15,7 +15,7 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
   final FlutterTts flutterTts = FlutterTts();
   final stt.SpeechToText speech = stt.SpeechToText();
   TextEditingController textController = TextEditingController();
-  VideoPlayerController? _videoController;
+  VideoPlayerController? eoController;
   bool isListening = false;
   static final Map<String, String> keywordToVideoMap = {};
 
@@ -62,18 +62,18 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
   static void createCauDict() {
     keywordToVideoMap.clear();
     keywordToVideoMap.addAll({
-      "xin chào": "xin_chao_vid.mp4",
-      "cảm ơn": "cam_on_vid.mp4",
+      "xin chào": "xin_chao.mp4",
+      "cảm ơn": "cam_on.mp4",
       "đánh vần ngón tay": "danh_van_ngon_tay.mp4",
       "bạn khỏe không": "ban_khoe_khong.mp4",
       "bạn thật tuyệt vời": "ban_that_tuyet_voi.mp4",
-      "hẹn gặp lại": "hen_gap_lai_vid.mp4",
-      "rất vui được gặp bạn": "rat_vui_duoc_gap_ban_vid.mp4",
+      "hẹn gặp lại": "hen_gap_lai.mp4",
+      "rất vui được gặp bạn": "rat_vui_duoc_gap_ban.mp4",
       "tên tôi là": "ten_toi_la.mp4",
       "vỗ tay": "vo_tay.mp4",
-      "xin lỗi": "xin_loi_vid.mp4",
+      "xin lỗi": "xin_loi.mp4",
       "bất ngờ": "bat_ngo.mp4",
-      "buồn": "buon_vid.mp4",
+      "buồn": "buon.mp4",
       "thất vọng": "that_vong.mp4",
       "tức giận": "tuc_gian.mp4",
       "vui": "vui.mp4",
@@ -85,11 +85,11 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
       "hồi hộp": "hoi_hop.mp4",
       "không biết": "khong_biet.mp4",
       "không hiểu": "khong_hieu.mp4",
-      "không thích": "khong_thich_vid.mp4",
+      "không thích": "khong_thich.mp4",
       "mắc cỡ": "mac_co.mp4",
       "nhớ": "nho.mp4",
-      "sợ": "so_vid.mp4",
-      "thích": "thich_vid.mp4",
+      "sợ": "so.mp4",
+      "thích": "thich.mp4",
       "thông cảm": "thong_cam.mp4",
       "tình cảm": "tinh_cam.mp4",
       "tò mò": "to_mo.mp4",
@@ -113,7 +113,7 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
 
   @override
   void dispose() {
-    _videoController?.dispose();
+    eoController?.dispose();
     super.dispose();
   }
 
@@ -149,18 +149,18 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
 
   void playNextVideo() {
     if (currentIndex < videoQueue.length) {
-      if (_videoController != null) {
-        _videoController!.dispose();
+      if (eoController != null) {
+        eoController!.dispose();
       }
-      _videoController = VideoPlayerController.asset(
+      eoController = VideoPlayerController.asset(
           "assets/videos/${videoQueue[currentIndex]}")
         ..initialize().then((_) {
           setState(() {});
-          _videoController?.play();
+          eoController?.play();
         })
         ..addListener(() {
-          if (_videoController!.value.position >=
-              _videoController!.value.duration) {
+          if (eoController!.value.position >=
+              eoController!.value.duration) {
             currentIndex++;
             if (currentIndex < videoQueue.length) {
               playNextVideo();
@@ -171,13 +171,16 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
   }
 
   void playVideo(String keyword) {
-    if (_videoController != null) {
-      _videoController!.dispose();
+    print('assets/videos/$keyword');
+    if (eoController != null) {
+      eoController!.dispose();
     }
-    _videoController = VideoPlayerController.asset('assets/videos/$keyword')
+    eoController = VideoPlayerController.asset('assets/videos/$keyword')
       ..initialize().then((_) {
         setState(() {});
-        _videoController!.play();
+        eoController!.play();
+      }).catchError((err){
+        print(err);
       });
   }
 
@@ -261,7 +264,7 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
       ),
       body: Column(
         children: [
-          if (_videoController != null && _videoController!.value.isInitialized)
+          if (eoController != null && eoController!.value.isInitialized)
             Container(
               constraints: const BoxConstraints(maxHeight: 250),
               margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -274,8 +277,8 @@ class _PersonNormalScreenState extends State<PersonNormalScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: AspectRatio(
-                  aspectRatio: _videoController!.value.aspectRatio,
-                  child: VideoPlayer(_videoController!),
+                  aspectRatio: eoController!.value.aspectRatio,
+                  child: VideoPlayer(eoController!),
                 ),
               ),
             ),

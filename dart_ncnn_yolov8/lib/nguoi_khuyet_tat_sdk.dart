@@ -83,6 +83,8 @@ class NguoiKhuyetTatSdk {
       required String moneyParam,
       required String doorModel,
       required String doorParam,
+      required String deafModelV2,
+      required String deafParamv2,
       bool autoDispose = true}) async {
     if (autoDispose) {
       unLoad();
@@ -105,7 +107,9 @@ class NguoiKhuyetTatSdk {
       _copy(moneyModel),
       _copy(moneyParam),
       _copy(doorModel),
-      _copy(doorParam)
+      _copy(doorParam),
+      _copy(deafModelV2),
+      _copy(deafParamv2)
     ]);
 
     final tempObjectModel = results[0].toNativeUtf8();
@@ -126,6 +130,8 @@ class NguoiKhuyetTatSdk {
     final tempMoneyParam = results[15].toNativeUtf8();
     final tempDoorModel = results[16].toNativeUtf8();
     final tempDoorParam = results[17].toNativeUtf8();
+    final tempDeafModelV2 = results[18].toNativeUtf8();
+    final tempDeafParamV2 = results[19].toNativeUtf8();
 
     if (isBlind && !isDeaf) {
       _bindings.load(
@@ -148,7 +154,9 @@ class NguoiKhuyetTatSdk {
           tempMoneyModel as Pointer<Char>,
           tempMoneyParam as Pointer<Char>,
           tempDoorModel as Pointer<Char>,
-          tempDoorParam as Pointer<Char>);
+          tempDoorParam as Pointer<Char>,
+          tempDeafModelV2 as Pointer<Char>,
+          tempDeafParamV2 as Pointer<Char>);
     } else if (!isBlind && isDeaf) {
       _bindings.load(
           1,
@@ -170,7 +178,9 @@ class NguoiKhuyetTatSdk {
           tempMoneyModel as Pointer<Char>,
           tempMoneyParam as Pointer<Char>,
           tempDoorModel as Pointer<Char>,
-          tempDoorParam as Pointer<Char>);
+          tempDoorParam as Pointer<Char>,
+          tempDeafModelV2 as Pointer<Char>,
+          tempDeafParamV2 as Pointer<Char>);
     }
   }
 

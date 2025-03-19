@@ -36,6 +36,8 @@ class FaceRecognitionController extends StateNotifier<List<double>> {
         faceModel: 'assets/yolo/scrfd_2.5g_kps-opt2.bin',
         faceParam: 'assets/yolo/scrfd_2.5g_kps-opt2.param',
         lightModel: "",
+        deafModelV2: '',
+        deafParamv2: '',
         lightParam: "",
         emotionModel: "",
         emotionParam: "",

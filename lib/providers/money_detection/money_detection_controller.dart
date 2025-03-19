@@ -36,6 +36,8 @@ class MoneyDetectionController extends StateNotifier<List<YoloResult>> {
         faceParam: "",
         lightModel: "",
         lightParam: "",
+        deafModelV2: '',
+        deafParamv2: '',
         emotionModel: "",
         emotionParam: "",
         faceRegModel: "",
